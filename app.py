@@ -8,6 +8,7 @@ from flask import Flask, render_template, request, abort, url_for
 from flask_socketio import SocketIO
 import db
 import secrets
+from hashlib import sha256
 
 # import logging
 
@@ -41,7 +42,7 @@ def login_user():
         abort(404)
 
     username = request.json.get("username")
-    password = request.json.get("password")
+    password = hashFunc(request.json.get("password"))
 
     user =  db.get_user(username)
     if user is None:
@@ -63,7 +64,7 @@ def signup_user():
     if not request.is_json:
         abort(404)
     username = request.json.get("username")
-    password = request.json.get("password")
+    password = hashFunc(request.json.get("password"))
 
     if db.get_user(username) is None:
         db.insert_user(username, password)
@@ -82,6 +83,8 @@ def home():
         abort(404)
     return render_template("home.jinja", username=request.args.get("username"))
 
+def hashFunc(s):
+    return sha256(s.encode('utf-8')).hexdigest()
 
 
 if __name__ == '__main__':
