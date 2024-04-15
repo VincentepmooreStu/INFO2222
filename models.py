@@ -10,9 +10,10 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
-from sqlalchemy import String
+from sqlalchemy import String, Integer, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from typing import Dict
+import datetime
 
 # data models
 class Base(DeclarativeBase):
@@ -30,6 +31,15 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, primary_key=True)
     password: Mapped[str] = mapped_column(String)
     
+class Message(Base):
+    __tablename__ = "message"
+    
+    message_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    room_id: Mapped[int] = mapped_column(Integer)
+    sender_username: Mapped[str] = mapped_column(String)
+    receiver_username: Mapped[str] = mapped_column(String)
+    message_text: Mapped[str] = mapped_column(String)
+    timestamp: Mapped[DateTime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
 # stateful counter used to generate the room id
 class Counter():
