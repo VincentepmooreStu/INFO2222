@@ -55,7 +55,7 @@ def check_friendship_exists(user1: str, user2: str) -> bool:
     with Session(engine) as session:
         friendshipID1 = user1 + user2
         friendshipID2 = user2 + user1
-        exists = session.query(Friendship).filter_by(friendshipID=friendshipID1).first() is not None
+        return session.query(Friendship).filter_by(friendshipID=friendshipID1).first() is not None
 
 # returns all friends for user
 def get_friendships(username: str):
