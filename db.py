@@ -60,9 +60,8 @@ def check_friendship_exists(user1: str, user2: str) -> bool:
 # returns all friends for user
 def get_friendships(username: str):
     with Session(engine) as session:
-        query = f'SELECT friend_2 FROM friendship WHERE friend_1={username}'
-        result = session.execute(text(query))
+        result = session.execute(session.query(Friendship.friend_2).filter_by(friend_1=username))
         values = result.fetchall()
-        #for friend in values:
-            #friend = friend.strip(",()")
-        return values
+        friend_list = [v[0] for v in values]
+        return friend_list
+        
