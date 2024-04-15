@@ -4,11 +4,13 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
-from flask import Flask, render_template, request, abort, url_for
+from flask import Flask, render_template, request, abort, url_for, session
 from flask_socketio import SocketIO
 import db
 import secrets
 from hashlib import sha256
+from datetime import timedelta
+
 #hiii
 
 # import logging
@@ -21,6 +23,8 @@ app = Flask(__name__)
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
+app.config['SESSION_COOKIE_HTTPONLY'] = True # ensire JavaScript cannot access the session cookie.
+
 socketio = SocketIO(app)
 
 # don't remove this!!
@@ -53,6 +57,10 @@ def login_user():
         return "Error: Password does not match!"
 
     return url_for('home', username=request.json.get("username"))
+
+def logout():
+    session.clear()  # clears session data
+    return 'Logged out'
 
 # handles a get request to the signup page
 @app.route("/signup")
