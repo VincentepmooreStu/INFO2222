@@ -40,11 +40,22 @@ def inset_friendship(user1: str, user2: str):
     with Session(engine) as session:
         friendshipID1 = user1 + user2
         friendshipID2 = user2 + user1
-        friendship1 = Friendship(friendshipID=friendshipID1, friend_1=user1, friend_2=user2)
-        friendship2 = Friendship(friendshipID=friendshipID2, friend_1=user2, friend_2=user1)
-        session.add(friendship1)
-        session.add(friendship2)
-        session.commit()
+        if check_friendship_exists(user1, user2):
+            print('Friend already exists')
+            return #insert friend already exists msg
+        else: 
+            friendship1 = Friendship(friendshipID=friendshipID1, friend_1=user1, friend_2=user2)
+            friendship2 = Friendship(friendshipID=friendshipID2, friend_1=user2, friend_2=user1)
+            session.add(friendship1)
+            session.add(friendship2)
+            session.commit()
+
+#checks if friendship already exists
+def check_friendship_exists(user1: str, user2: str) -> bool:
+    with Session(engine) as session:
+        friendshipID1 = user1 + user2
+        friendshipID2 = user2 + user1
+        exists = session.query(Friendship).filter_by(friendshipID=friendshipID1).first() is not None
 
 # returns all friends for user
 def get_friendships(username: str):
