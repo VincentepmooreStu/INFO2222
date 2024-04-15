@@ -86,6 +86,8 @@ def home():
 def hashFunc(s):
     return sha256(s.encode('utf-8')).hexdigest()
 
+def intoStorage(s):
+    return 
 
 if __name__ == '__main__':
     socketio.run(app)
