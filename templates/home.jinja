@@ -36,6 +36,19 @@
 <h1>Messaging App </h1>
 
 <main>
+    <section id="friends_list">
+        <h2>Your Friends</h2>
+        <ul>
+            {% for friend in friends %}
+            <li>{{ friend }}</li>
+            {% else %}
+            <li>No friends to display.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+
+<main>
     <!-- The messages are displayed here -->
     <section id="message_box"></section>
 
@@ -56,7 +69,7 @@
         <input id="message" placeholder="message">
         <button onclick="send()">Send</button>
         <button onclick="leave()">Leave Room</button>
-        <button onclick="logout()">Logout</button>
+        <p><a href={{ url_for('logout') }}>Logout</a></p>
     </section>
 </main>
 
