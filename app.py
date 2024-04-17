@@ -58,10 +58,10 @@ def login_user():
 
     return url_for('home', username=request.json.get("username"))
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout")
 def logout():
     session.clear()  # clears session data
-    return redirect(url_for('index'))
+    return index()
 
 
 # handles a get request to the signup page
