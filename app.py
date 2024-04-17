@@ -55,8 +55,8 @@ def login_user():
 
     if user.password != password:
         return "Error: Password does not match!"
-
-    return url_for('home', username=request.json.get("username"))
+    
+    return url_for('home', username=username)
 
 @app.route("/logout")
 def logout():
@@ -75,9 +75,10 @@ def signup():
 def signup_user():
     if not request.is_json:
         abort(404)
+
     username = request.json.get("username")
     password = hashFunc(request.json.get("password"))
-
+    
     if db.get_user(username) is None:
         db.insert_user(username, password)
         return url_for('home', username=username)
@@ -88,14 +89,18 @@ def signup_user():
 def page_not_found(_):
     return render_template('404.jinja'), 404
 
+@app.route("/fetch_friends")
+def fetch_friends(username: str):
+    return db.get_friendships(username)
+
 # home page, where the messaging app is
 @app.route("/home")
 def home():
     if request.args.get("username") is None:
         abort(404)
 
-    friends = db.get_friendships("username") # get friends
-    return render_template("home.jinja", username=request.args.get("username"))
+    friends = db.get_friendships(request.args.get("username")) # get friends
+    return render_template("home.jinja", username=request.args.get("username"), friend_list = friends)
 
 #inserting friendship into database
 def test_friendShip(user1, user2):

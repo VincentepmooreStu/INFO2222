@@ -4,50 +4,62 @@
 {% extends 'base.jinja' %}
 
 
-{% block content %} 
-   <style>
+{% block content %}
+<style>
     nav {
         border-bottom: 1px solid black;
         overflow: auto
     }
 
     #message_box {
-        border: 1px solid black; 
-        height: 400px; 
-        width: 800px; 
+        border: 1px solid black;
+        height: 400px;
+        width: 800px;
         overflow: auto;
         padding: 2px;
+        display: inline-block;
     }
 
-    .text  {
+    #friends_list {
+        border: 1px solid black;
+        height: 400px;
+        width: 100px;
+        overflow: auto;
+        padding: 2px;
+        display: inline-block;
+    }
+
+    .text {
         margin-top: 2px;
         margin-bottom: 2px;
     }
 
+    .vertical-menu {
+        width: 100px;
+    }
+
+    .vertical-menu a {
+        color: black;
+        display: block;
+        padding: 8px;
+    }
+
+    .vertical-menu a:hover {
+        background-color: #ccc;
+    }
+
+    .vertical-menu a.active {
+    }
 </style>
 
 <!--Navbar, you'll see the username here-->
 <nav style="border-bottom: 1px solid black;">
     <ol style="float: right">
-        <li style="display:inline-block">Username:  {{ username }} </li>
+        <li style="display:inline-block">Username: {{ username }} </li>
     </ol>
 </nav>
 
 <h1>Messaging App </h1>
-
-<main>
-    <section id="friends_list">
-        <h2>Your Friends</h2>
-        <ul>
-            {% for friend in friends %}
-            <li>{{ friend }}</li>
-            {% else %}
-            <li>No friends to display.</li>
-            {% endfor %}
-        </ul>
-    </section>
-
-
 <main>
     <!-- The messages are displayed here -->
     <section id="message_box"></section>
@@ -61,10 +73,21 @@
         but we're using it anyways coz its easy :)-->
         <button onclick="join_room()">Chat</button>
     </section>
-
+    <section id="friends_list">
+        <h2>Your Friends</h2>
+        <td style="test-align: center;">
+            <div class="vertical-menu">
+                {% for friend in friend_list %}
+                <a href="#">{{ friend }}</a>
+                {% else %}
+                <h2>No friends to display.</h2>
+                {% endfor %}
+            </div>
+        </td>
+    </section>
     <!-- The (message) input box is set to display: none initially, 
     this means the input box is "invisible" initially-->
-    <section id="input_box" style="display: none" >
+    <section id="input_box" style="display: none">
         <p class="text">Message: </p>
         <input id="message" placeholder="message">
         <button onclick="send()">Send</button>
@@ -87,7 +110,7 @@
 
     // when the user presses the enter key inside of the "receiver box"
     // the user joins a (socket) room
-     $("#receiver").on("keyup", (e) => {
+    $("#receiver").on("keyup", (e) => {
         if (e.key == "Enter") {
             join_room();
         }
@@ -107,31 +130,30 @@
         $("#input_box").show();
         room_id = parseInt(Cookies.get("room_id"));
     })
-    
+
     // Here's the Socket IO part of the code
     // things get a bit complicated here so brace yourselves :P
     let username = "{{ username }}";
-
     Cookies.set('username', username);
 
     // initializes the socket
     const socket = io();
 
     // an incoming message arrives, we'll add the message to the message box
-    socket.on("incoming", (msg, color="black") => {
+    socket.on("incoming", (msg, color = "black") => {
         add_message(msg, color);
     })
-    
+
     // we'll send the message to the server by emitting a "send" event
     function send() {
         let message = $("#message").val();
         $("#message").val("");
-        socket.emit("send", username, message, room_id);  
-    } 
+        socket.emit("send", username, message, room_id);
+    }
 
     // we emit a join room event to the server to join a room
     function join_room() {
-       
+
         let receiver = $("#receiver").val();
 
         // pass in the receiver of our message to the server
@@ -152,7 +174,7 @@
             $("#chat_box").hide();
             $("#input_box").show();
         });
-     
+
     }
 
     // function when the user clicks on "Leave Room"
@@ -171,7 +193,7 @@
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
     }
-    
- 
+
+
 </script>
 {% endblock %}
