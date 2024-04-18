@@ -29,6 +29,15 @@
         display: inline-block;
     }
 
+    #request_list {
+        border: 1px solid black;
+        height: 400px;
+        width: 200px;
+        overflow: auto;
+        padding: 2px;
+        display: inline-block;
+    }
+
     .text {
         margin-top: 2px;
         margin-bottom: 2px;
@@ -78,9 +87,21 @@
         <td style="test-align: center;">
             <div class="vertical-menu">
                 {% for friend in friend_list %}
-                <a href="#">{{ friend }}</a>
+                <button onclick="join_room('{{ friend }}')">{{ friend }}</button>
                 {% else %}
                 <h2>No friends to display.</h2>
+                {% endfor %}
+            </div>
+        </td>
+    </section>
+    <section id="request_list">
+        <h2>Requests</h2>
+        <td style="test-align: center;">
+            <div class="vertical-menu">
+                {% for request in requests %}
+                <button onclick="accept_request('{{ request }}')">{{ request }}</button>
+                {% else %}
+                <h2>No requests.</h2>
                 {% endfor %}
             </div>
         </td>
@@ -168,9 +189,7 @@
     }
 
     // we emit a join room event to the server to join a room
-    function join_room() {
-
-        let receiver = $("#receiver").val();
+    function join_room(receiver) {
 
         // pass in the receiver of our message to the server
         // as well as the current user's username
@@ -208,8 +227,17 @@
         let box = $("#message_box");
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
+
+        
     }
 
+    function accept_request(requester) {
+        res = socket.emit("accept", username, requester);
+        if (typeof res != "number") {
+                alert(res);
+                return;
+            }
+    }
 
 </script>
 {% endblock %}

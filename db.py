@@ -93,6 +93,15 @@ def accept_request(requester, requestee):
                 return 'No request to accept!'
 
         sql = delete(Requests).where(Requests.requestID == request_ID)
+        sql = delete(Requests).where(Requests.requestID == request_ID2)
         session.execute(sql)
         session.commit()
         inset_friendship(requester, requestee)
+        return "Request accepted!"
+
+def get_friend_requests(username):
+    with Session(engine) as session:
+        result = session.execute(session.query(Requests.requester).filter_by(requestee=username))
+        values = result.fetchall()
+        request_list = [v[0] for v in values]
+        return request_list

@@ -98,8 +98,9 @@ def home():
     if request.args.get("username") is None:
         abort(404)
     friends = db.get_friendships(request.args.get("username")) # get friends
-    return render_template("home.jinja", username=request.args.get("username"), friend_list = friends)
-    
+    requests = db.get_friend_requests(request.args.get("username")) # get friend requests
+    return render_template("home.jinja", username=request.args.get("username"), friend_list = friends, requests=requests)
+
 
 #simple hashing function
 def hashFunc(s):
