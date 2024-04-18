@@ -75,13 +75,7 @@
 
     <!-- These part ideally should be a form element, 
     but I wrote this code a year ago and I don't want to break anything...-->
-    <section id="invite_box">
-        <p class="text">Add Friend: </p>
-        <input id="requestee" placeholder="username">
-        <!-- MDN says its bad practice to use the onclick attribute,
-        but we're using it anyways coz its easy :)-->
-        <button onclick="add_friend()">Chat</button>
-    </section>
+    
     <section id="friends_list">
         <h2>Your Friends</h2>
         <td style="test-align: center;">
@@ -108,6 +102,13 @@
     </section>
     <!-- The (message) input box is set to display: none initially, 
     this means the input box is "invisible" initially-->
+    <section id="invite_box">
+        <p class="text">Add Friend: </p>
+        <input id="requestee" placeholder="username">
+        <!-- MDN says its bad practice to use the onclick attribute,
+        but we're using it anyways coz its easy :)-->
+        <button onclick="add_friend()">Chat</button>
+    </section>
     <section id="input_box" style="display: none">
         <p class="text">Message: </p>
         <input id="message" placeholder="message">
@@ -206,7 +207,7 @@
             Cookies.set("room_id", room_id);
 
             // now we'll show the input box, so the user can input their message
-            $("#chat_box").hide();
+            $("#invite_box").hide();
             $("#input_box").show();
         });
 
@@ -218,7 +219,7 @@
         Cookies.remove("room_id");
         socket.emit("leave", username, room_id);
         $("#input_box").hide();
-        $("#chat_box").show();
+        $("#invite_box").show();
     }
 
     // function to add a message to the message box
