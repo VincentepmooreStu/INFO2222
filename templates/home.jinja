@@ -234,7 +234,7 @@
 
     function accept_request(requester) {
         res = socket.emit("accept", username, requester);
-        if (typeof res != "number") {
+        if (typeof res != "number" || typeof res != null) {
                 alert(res);
                 return;
             }

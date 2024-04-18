@@ -67,6 +67,8 @@ def get_friendships(username: str):
 
 def send_request(requester, requestee):
     with Session(engine) as session:
+        if requester == requestee:
+            return "You can't invite yourself!"
         request_outwards_ID = requester + requestee
         request_inwards_ID = requestee + requester
 
