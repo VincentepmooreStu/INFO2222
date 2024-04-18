@@ -23,7 +23,7 @@
     #friends_list {
         border: 1px solid black;
         height: 400px;
-        width: 100px;
+        width: 200px;
         overflow: auto;
         padding: 2px;
         display: inline-block;
@@ -66,12 +66,12 @@
 
     <!-- These part ideally should be a form element, 
     but I wrote this code a year ago and I don't want to break anything...-->
-    <section id="chat_box">
-        <p class="text">Chat with: </p>
-        <input id="receiver" placeholder="username">
+    <section id="invite_box">
+        <p class="text">Add Friend: </p>
+        <input id="requestee" placeholder="username">
         <!-- MDN says its bad practice to use the onclick attribute,
         but we're using it anyways coz its easy :)-->
-        <button onclick="join_room()">Chat</button>
+        <button onclick="add_friend()">Chat</button>
     </section>
     <section id="friends_list">
         <h2>Your Friends</h2>
@@ -149,6 +149,22 @@
         let message = $("#message").val();
         $("#message").val("");
         socket.emit("send", username, message, room_id);
+    }
+
+    function add_friend() {
+        let new_friend = $("#requestee").val();
+
+        // pass in the receiver of our message to the server
+        // as well as the current user's username
+        socket.emit("add", username, new_friend, (res) => {
+            // res is a string with the error message if the error occurs
+            // this is a pretty bad way of doing error handling, but watevs
+            if (typeof res != "number") {
+                alert(res);
+                return;
+            }
+        });
+
     }
 
     // we emit a join room event to the server to join a room

@@ -42,6 +42,13 @@ class Friendship(Base):
     friend_1: Mapped[str] = mapped_column(String)
     friend_2: Mapped[str] = mapped_column(String)
 
+#model to store friend requests
+class Requests(Base):
+    __tablename__ = "requests"
+    requestID: Mapped[str] = mapped_column(String, primary_key=True)
+    requester: Mapped[str] = mapped_column(String)
+    requestee: Mapped[str] = mapped_column(String)
+    
 class Message(Base):
     __tablename__ = "message"
     

@@ -67,7 +67,6 @@ def logout():
 # handles a get request to the signup page
 @app.route("/signup")
 def signup():
-    test_friendShip('test_user1', 'test_user2')
     return render_template("signup.jinja")
 
 # handles a post request when the user clicks the signup button
@@ -98,14 +97,9 @@ def fetch_friends(username: str):
 def home():
     if request.args.get("username") is None:
         abort(404)
-
     friends = db.get_friendships(request.args.get("username")) # get friends
     return render_template("home.jinja", username=request.args.get("username"), friend_list = friends)
-
-#inserting friendship into database
-def test_friendShip(user1, user2):
-   db.inset_friendship(user1, user2)
-   print(db.get_friendships(user1))
+    
 
 #simple hashing function
 def hashFunc(s):

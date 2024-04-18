@@ -3,7 +3,7 @@ db
 database file, containing all the logic to interface with the sql database
 '''
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from models import *
@@ -64,4 +64,35 @@ def get_friendships(username: str):
         values = result.fetchall()
         friend_list = [v[0] for v in values]
         return friend_list
+
+def send_request(requester, requestee):
+    with Session(engine) as session:
+        request_outwards_ID = requester + requestee
+        request_inwards_ID = requestee + requester
+
+        if check_friendship_exists(requester, requestee):
+            return 'Already friends!'
+        if session.query(Requests).filter_by(requestID=request_outwards_ID).first() is not None:
+            return 'Request already sent!'
         
+        if session.query(Requests).filter_by(requestID=request_inwards_ID).first() is not None:
+            accept_request(requestee, requester)
+            return f'Accepting request from {requestee}'
+        print(request_outwards_ID)
+        request = Requests(requestID=request_outwards_ID, requester=requester, requestee=requestee)
+        session.add(request)
+        session.commit()
+
+def accept_request(requester, requestee):
+    with Session(engine) as session:
+        request_ID = requester + requestee
+        request_ID2 = requestee + requester
+    
+        if session.query(Requests).filter_by(requestID=request_ID).first() is None:
+            if session.query(Requests).filter_by(requestID=request_ID2).first() is None:
+                return 'No request to accept!'
+
+        sql = delete(Requests).where(Requests.requestID == request_ID)
+        session.execute(sql)
+        session.commit()
+        inset_friendship(requester, requestee)

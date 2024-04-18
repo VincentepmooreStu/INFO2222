@@ -80,6 +80,13 @@ def join(sender_name, receiver_name):
     emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"), to=room_id)
     return room_id
 
+@socketio.on("add")
+def send_request(username, new_friend):
+    if db.get_user(new_friend) is None:
+        return "User does not exist!"
+    #db.inset_friendship(username, new_friend)
+    return db.send_request(username, new_friend)
+
 # leave room event handler
 @socketio.on("leave")
 def leave(username, room_id):
