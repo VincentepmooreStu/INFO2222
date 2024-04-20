@@ -98,7 +98,7 @@ def accept_request(requester, requestee):
         sql = delete(Requests).where(Requests.requestID == request_ID2)
         session.execute(sql)
         session.commit()
-        inset_friendship(requester, requestee)
+        insert_friendship(requester, requestee)
         return "Request accepted!"
 
 def get_friend_requests(username):
