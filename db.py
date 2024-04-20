@@ -36,7 +36,7 @@ def get_user(username: str):
         return session.get(User, username)
 
 # inserts friendship into database
-def inset_friendship(user1: str, user2: str):
+def insert_friendship(user1: str, user2: str):
     with Session(engine) as session:
         friendshipID1 = user1 + user2
         friendshipID2 = user2 + user1
