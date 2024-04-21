@@ -80,7 +80,6 @@ class Room():
     def create_room(self, sender: str, receiver: str) -> int:
         room_id = self.counter.get()
         self.dict[sender] = room_id
-        self.dict[receiver] = room_id
         return room_id
     
     def join_room(self,  sender: str, room_id: int) -> int:
@@ -96,4 +95,12 @@ class Room():
         if user not in self.dict.keys():
             return None
         return self.dict[user]
+    
+    # gets users in specific room
+    def get_users(self, room_id):
+        ls = []
+        for client in self.dict.keys():
+            if self.dict[client] == room_id:
+                ls.append(client)
+        return ls
     

@@ -121,6 +121,7 @@
 <script src="/static/js/libs/socket.io.min.js"></script>
 <script>
     let room_id = 0;
+    let connected = false;
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -132,9 +133,9 @@
 
     // when the user presses the enter key inside of the "receiver box"
     // the user joins a (socket) room
-    $("#receiver").on("keyup", (e) => {
+    $("#requestee").on("keyup", (e) => {
         if (e.key == "Enter") {
-            join_room();
+            add_friend();
         }
     })
 
@@ -166,16 +167,32 @@
         add_message(msg, color);
     })
 
+    socket.on("not_connected", () => {
+        connected = false;
+    })
+
+    socket.on("connected", () => {
+        connected = true;
+    })
+
     // we'll send the message to the server by emitting a "send" event
     function send() {
+        check_connected()
         let message = $("#message").val();
         $("#message").val("");
-        socket.emit("send", username, message, room_id);
+            if (connected) {
+            socket.emit("send", username, message, room_id);
+            socket.on("reply", (msg, color = "black") => {
+                add_message(msg, color);
+            })}
+            else {
+                add_message("Cannot send message, waiting to connect ...", "grey");
+            }
     }
 
     function add_friend() {
         let new_friend = $("#requestee").val();
-
+        $("#requestee").val("");
         // pass in the receiver of our message to the server
         // as well as the current user's username
         socket.emit("add", username, new_friend, (res) => {
@@ -189,9 +206,20 @@
 
     }
 
+    function check_connected() {
+        socket.emit("check_connected", parseInt(Cookies.get("room_id")), (res) => {
+            if (res) {
+                connected = true;
+                return true;
+            } else {
+                connected = false;
+                return false;
+            }
+        })
+    }
+
     // we emit a join room event to the server to join a room
     function join_room(receiver) {
-
         // pass in the receiver of our message to the server
         // as well as the current user's username
         socket.emit("join", username, receiver, (res) => {
@@ -209,6 +237,9 @@
             // now we'll show the input box, so the user can input their message
             $("#invite_box").hide();
             $("#input_box").show();
+
+            check_connected()
+            socket.emit("display_connection", room_id, () =>{})
         });
 
     }
@@ -224,7 +255,7 @@
 
     // function to add a message to the message box
     // called when an incoming message has reached a client
-    function add_message(message, color) {
+    function add_message(message, color = "black") {
         let box = $("#message_box");
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);

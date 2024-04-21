@@ -37,9 +37,12 @@ def connect():
 def disconnect():
     username = request.cookies.get("username")
     room_id = request.cookies.get("room_id")
-    if room_id is None or username is None:
+    if room_id is None or username is None: 
         return
+    emit("not_connected")
     emit("incoming", (f"{username} has disconnected", "red"), to=int(room_id))
+    leave_room(room_id)
+    room.leave_room(username)
 
 # send message event handler
 @socketio.on("send")
@@ -50,7 +53,6 @@ def send(username, message, room_id):
 # sent when the user joins a room
 @socketio.on("join")
 def join(sender_name, receiver_name):
-    
     receiver = db.get_user(receiver_name)
     if receiver is None:
         return "Unknown receiver!"
@@ -69,7 +71,6 @@ def join(sender_name, receiver_name):
         # emit to everyone in the room except the sender
         emit("incoming", (f"{sender_name} has joined the room.", "green"), to=room_id, include_self=False)
         # emit only to the sender
-        emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"))
         return room_id
 
     # if the user isn't inside of any room, 
@@ -77,22 +78,37 @@ def join(sender_name, receiver_name):
     # or is simply a new user looking to chat with someone
     room_id = room.create_room(sender_name, receiver_name)
     join_room(room_id)
-    emit("incoming", (f"{sender_name} has joined the room. Now talking to {receiver_name}.", "green"), to=room_id)
+    emit("incoming", (f"{sender_name} has joined the room. Now waiting for {receiver_name} to connect.", "green"), to=room_id)
     return room_id
+
+@socketio.on("check_connected")
+def check_connection(room_id):
+    if len(room.get_users(room_id)) == 2:
+        emit("connected", to=room_id)
+        return True
+    emit("not_connected", to=room_id)
+    return False
+    
+
+@socketio.on("display_connection")
+def display_connection(room_id):
+    if check_connection(room_id):
+        emit("incoming", ("You are now connected!", "green"), to=room_id)
 
 @socketio.on("add")
 def send_request(username, new_friend):
     if db.get_user(new_friend) is None:
         return "User does not exist!"
-    #db.inset_friendship(username, new_friend)
     return db.send_request(username, new_friend)
 
 # leave room event handler
 @socketio.on("leave")
 def leave(username, room_id):
     emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
+    emit("not_connected", to=room_id)
     leave_room(room_id)
     room.leave_room(username)
+    print(room.get_users(room_id))
 
 @socketio.on("accept")
 def accept_request(username, requester):
