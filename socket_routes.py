@@ -65,7 +65,6 @@ def join(sender_name, receiver_name):
 
     # if the user is already inside of a room 
     if room_id is not None:
-        
         room.join_room(sender_name, room_id)
         join_room(room_id)
         # emit to everyone in the room except the sender
@@ -88,7 +87,16 @@ def check_connection(room_id):
         return True
     emit("not_connected", to=room_id)
     return False
-    
+
+@socketio.on("diffie_public_exchange")
+def diffie_exchange_helper(B, room_id):
+    emit("receive_B", (B), to=room_id)
+
+@socketio.on("request_shared_keys")
+def send_shared_keys():
+    p = 23
+    g = 5
+    return p, g
 
 @socketio.on("display_connection")
 def display_connection(room_id):
