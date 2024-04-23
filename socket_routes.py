@@ -88,9 +88,10 @@ def check_connection(room_id):
     emit("not_connected", to=room_id)
     return False
 
-@socketio.on("diffie_public_exchange")
-def diffie_exchange_helper(B, room_id):
-    emit("receive_B", (B), to=room_id)
+#receives A and B from clients and sends to other connected client
+@socketio.on("send_pub")
+def diffie_exchange_helper(pub, is_B, room_id):
+    emit("key_pub", (pub, is_B), to=room_id, include_self=False)
 
 @socketio.on("request_shared_keys")
 def send_shared_keys():
@@ -116,7 +117,6 @@ def leave(username, room_id):
     emit("not_connected", to=room_id)
     leave_room(room_id)
     room.leave_room(username)
-    print(room.get_users(room_id))
 
 @socketio.on("accept")
 def accept_request(username, requester):

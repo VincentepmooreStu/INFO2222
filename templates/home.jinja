@@ -216,23 +216,24 @@
         })
     }
 
-    function send_A() {
+    function send_pub() {
         g = parseInt(Cookies.get('G'));
         p = parseInt(Cookies.get('P'));
         a = parseInt(Cookies.get('secret_key'));
         A = Math.pow(g, a) % p;
-        socket.emit('diffie_public_exchange', A, parseInt(Cookies.get("room_id")))
+        socket.emit('send_pub', A, false, parseInt(Cookies.get("room_id")));
     }
 
-    socket.on("receive_B", (B) =>{
+    socket.on("key_pub", (B, is_B) =>{
         g = parseInt(Cookies.get('G'));
         p = parseInt(Cookies.get('P'));
         a = parseInt(Cookies.get('secret_key'));
         A = Math.pow(g, a) % p;
-        if (A != B && Cookies.get('shared_key') == null){
-            Cookies.set('shared_key', Math.pow(B, a) % p);
-            add_message(Cookies.get('shared_key'));
-            socket.emit('diffie_public_exchange', A, parseInt(Cookies.get("room_id")));
+        Cookies.set('shared_key', Math.pow(B, a) % p);
+        add_message('You are HERE!')
+        add_message(Cookies.get('shared_key'));
+        if (!is_B){
+            socket.emit('send_pub', A, true, parseInt(Cookies.get("room_id")));
         }
     })
 
@@ -263,15 +264,22 @@
             // set the room id variable to the room id returned by the server
             room_id = res;
             Cookies.set("room_id", room_id);
+            check_connected();
 
             // now we'll show the input box, so the user can input their message
             $("#invite_box").hide();
             $("#friends_list").hide();
             $("#request_list").hide();
             $("#input_box").show();
-
-            check_connected()
-            socket.emit("display_connection", room_id, () =>{})
+            
+            socket.emit("check_connected", parseInt(Cookies.get("room_id")), (res) => {
+                add_message(String(res));
+                if (res) {
+                    socket.emit("display_connection", room_id)
+                    send_pub();
+                }
+            })
+            
         });
 
     }
