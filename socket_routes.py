@@ -47,7 +47,7 @@ def disconnect():
 # send message event handler
 @socketio.on("send")
 def send(username, message, room_id):
-    emit("incoming", (f"{username}: {message}"), to=room_id)
+    emit("incoming_from_user", (username, message), to=room_id)
     
 # join room event handler
 # sent when the user joins a room
@@ -95,8 +95,8 @@ def diffie_exchange_helper(pub, is_B, room_id):
 
 @socketio.on("request_shared_keys")
 def send_shared_keys():
-    p = 23
-    g = 5
+    p = 26266879083691988639
+    g = 7
     return p, g
 
 @socketio.on("display_connection")

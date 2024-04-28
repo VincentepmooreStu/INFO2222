@@ -118,11 +118,15 @@
     </section>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
 <script src="/static/js/libs/socket.io.min.js"></script>
 <script>
     let room_id = 0;
     let connected = false;
-    Cookies.set('secret_key', Math.floor(Math.random() * 10));
+
+    BigInt.prototype.toJSON = function() { return this.toString(); };
+
+    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)));
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -169,6 +173,12 @@
         add_message(msg, color);
     })
 
+    socket.on("incoming_from_user", (username, cipher_text) => {
+        message = CryptoJS.AES.decrypt(cipher_text, String(Cookies.get("shared_key")));
+        message = message.toString(CryptoJS.enc.Utf8);
+        add_message(`${username}: ${message}`);
+    })
+
     socket.on("not_connected", () => {
         connected = false;
     })
@@ -183,10 +193,10 @@
         let message = $("#message").val();
         $("#message").val("");
             if (connected) {
-            socket.emit("send", username, message, room_id);
-            socket.on("reply", (msg, color = "black") => {
-                add_message(msg, color);
-            })}
+            cipher_text = CryptoJS.AES.encrypt(message, String(Cookies.get("shared_key")));
+            console.log(cipher_text)
+            socket.emit("send", username, cipher_text.toString(), parseInt(Cookies.get('room_id')));
+            }
             else {
                 add_message("Cannot send message, waiting to connect ...", "grey");
             }
@@ -211,27 +221,27 @@
     // Gets shared keys for diffie helman from server and stores in cookies
     function get_shared_keys() {
         socket.emit("request_shared_keys", (p, g) => {
-            Cookies.set('P', p);
-            Cookies.set('G', g);
+            Cookies.set('P', BigInt(p));
+            Cookies.set('G', BigInt(g));
         })
     }
 
     function send_pub() {
-        g = parseInt(Cookies.get('G'));
-        p = parseInt(Cookies.get('P'));
-        a = parseInt(Cookies.get('secret_key'));
-        A = Math.pow(g, a) % p;
+        g = BigInt(parseInt(Cookies.get('G')));
+        p = BigInt(parseInt(Cookies.get('P')));
+        a = BigInt(parseInt(Cookies.get('secret_key')));
+        A = (g ** a) % p;
+        //add_message(String(A));
         socket.emit('send_pub', A, false, parseInt(Cookies.get("room_id")));
     }
 
     socket.on("key_pub", (B, is_B) =>{
-        g = parseInt(Cookies.get('G'));
-        p = parseInt(Cookies.get('P'));
-        a = parseInt(Cookies.get('secret_key'));
-        A = Math.pow(g, a) % p;
-        Cookies.set('shared_key', Math.pow(B, a) % p);
-        add_message('You are HERE!')
-        add_message(Cookies.get('shared_key'));
+        g = BigInt(parseInt(Cookies.get('G')));
+        p = BigInt(parseInt(Cookies.get('P')));
+        a = BigInt(parseInt(Cookies.get('secret_key')));
+        A = (g ** a) % p;
+        Cookies.set('shared_key', (BigInt(B) ** a) % p);
+        //add_message(String(Cookies.get('shared_key')));
         if (!is_B){
             socket.emit('send_pub', A, true, parseInt(Cookies.get("room_id")));
         }
@@ -273,7 +283,6 @@
             $("#input_box").show();
             
             socket.emit("check_connected", parseInt(Cookies.get("room_id")), (res) => {
-                add_message(String(res));
                 if (res) {
                     socket.emit("display_connection", room_id)
                     send_pub();
@@ -311,6 +320,36 @@
                 return;
             }
     }
+
+    function encrypt(plain_text, secret) {
+        var key = CryptoJS.enc.Utf8.parse(secret);
+        let iv = CryptoJS.lib.WordArray.create(key.words.slice(0, 4));
+        console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
+      
+        // Encrypt the plaintext
+        var cipherText = CryptoJS.AES.encrypt(plain_text, key, {
+          iv: iv,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7
+          });
+      return (cipherText.toString(), iv);
+    }
+
+    function decrypt(cipherText, secret, iv) {
+      // IV is a base64 string
+      console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
+      let iv1 = CryptoJS.enc.Base64.parse(iv);
+      var key = CryptoJS.enc.Utf8.parse(secret);
+      var cipherBytes = CryptoJS.enc.Base64.parse(cipherText.replaceAll('"', ''));
+
+      var decrypted = CryptoJS.AES.decrypt({ciphertext: cipherBytes}, key, {
+          iv: 3,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7
+      });
+
+      return decrypted.toString(CryptoJS.enc.Utf8);
+}
 
 </script>
 {% endblock %}
