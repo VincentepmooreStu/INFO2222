@@ -46,8 +46,8 @@ def disconnect():
 
 # send message event handler
 @socketio.on("send")
-def send(username, message, room_id):
-    emit("incoming_from_user", (username, message), to=room_id)
+def send(username, message, hmac, room_id):
+    emit("incoming_from_user", (username, message, hmac), to=room_id)
     
 # join room event handler
 # sent when the user joins a room

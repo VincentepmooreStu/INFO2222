@@ -50,13 +50,13 @@ class Requests(Base):
     requestee: Mapped[str] = mapped_column(String)
 
 #message history model
-class Message(Base):
-    __tablename__ = "message"
+# class Message(Base):
+#     __tablename__ = "message"
     
-    msg_id : Mapped[int] = mapped_column(Integer, primary_key=True)
-    sender: Mapped[str] = mapped_column(String)
-    reciever: Mapped[str] = mapped_column(String)
-    message_text: Mapped[str] = mapped_column(String)
+#     msg_id : Mapped[int] = mapped_column(Integer, primary_key=True)
+#     sender: Mapped[str] = mapped_column(String)
+#     reciever: Mapped[str] = mapped_column(String)
+#     message_text: Mapped[str] = mapped_column(String)
 
 # stateful counter used to generate the room id
 class Counter():

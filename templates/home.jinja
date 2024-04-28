@@ -119,6 +119,7 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script src="/static/js/libs/socket.io.min.js"></script>
 <script>
     let room_id = 0;
@@ -173,10 +174,14 @@
         add_message(msg, color);
     })
 
-    socket.on("incoming_from_user", (username, cipher_text) => {
-        message = CryptoJS.AES.decrypt(cipher_text, String(Cookies.get("shared_key")));
+    socket.on("incoming_from_user", (username, cipher_text, hmac) => {
+        message = CryptoJS.AES.decrypt(cipher_text, Cookies.get("shared_key"));
         message = message.toString(CryptoJS.enc.Utf8);
-        add_message(`${username}: ${message}`);
+        if (hmac != CryptoJS.HmacSHA256(message, Cookies.get("shared_key").toString())){
+            alert("Your connection has been compromised!")
+        } else {
+            add_message(`${username}: ${message}`);
+        }
     })
 
     socket.on("not_connected", () => {
@@ -193,9 +198,9 @@
         let message = $("#message").val();
         $("#message").val("");
             if (connected) {
-            cipher_text = CryptoJS.AES.encrypt(message, String(Cookies.get("shared_key")));
-            console.log(cipher_text)
-            socket.emit("send", username, cipher_text.toString(), parseInt(Cookies.get('room_id')));
+            hmac = CryptoJS.HmacSHA256(message, Cookies.get("shared_key")).toString();
+            cipher_text = CryptoJS.AES.encrypt(message, Cookies.get("shared_key"));
+            socket.emit("send", username, cipher_text.toString(), hmac, parseInt(Cookies.get('room_id')));
             }
             else {
                 add_message("Cannot send message, waiting to connect ...", "grey");
