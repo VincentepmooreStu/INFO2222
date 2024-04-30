@@ -26,9 +26,18 @@ Sign up page, pretty much the same as login.
         // this function is identical to login(), see login.jinja
         async function signup() {
             let loginURL = "{{ url_for('signup_user') }}";
+            let entered_password = $("#password").val(); 
+            let username = $("#username").val();
+
+            if (!checkpassword(entered_password)) {
+                alert("Password complexity error");
+                return;
+            }
+
+            password = CryptoJS.SHA256(entered_password.concat(username)).toString();
             let res = await axios.post(loginURL, {
-                username: $("#username").val(),
-                password: $("#password").val()
+                username: username,
+                password: password
             });
             if (!isValidURL(res.data)) {
                 alert(res.data);
@@ -36,5 +45,14 @@ Sign up page, pretty much the same as login.
             }
             window.open(res.data, "_self")
         }
+
+        function checkpassword(password) {
+            if (!password.match(/[a-z]+/) || !password.match(/[A-Z]+/) || !password.match(/[0-9]+/) ||
+            !password.match(/[$@#&!]+/) || password.length < 6 || password.length > 20) {
+                return false;
+            } else {
+                return true;
+            }
+  }
     </script>
 {% endblock %}

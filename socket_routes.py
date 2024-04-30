@@ -106,6 +106,9 @@ def display_connection(room_id):
 
 @socketio.on("add")
 def send_request(username, new_friend):
+    if not new_friend.isalnum():
+        return "User does not exist!"
+
     if db.get_user(new_friend) is None:
         return "User does not exist!"
     return db.send_request(username, new_friend)

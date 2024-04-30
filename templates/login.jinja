@@ -39,9 +39,14 @@
 
             // axios post is a fancy way of posting a request to the server,
             // we pass in the username and password here
+            let password = $("#password").val();
+            let username = $("#username").val();
+
+            password = CryptoJS.SHA256(password.concat(username)).toString();
+
             let res = await axios.post(loginURL, {
-                username: $("#username").val(),
-                password: $("#password").val()
+                username: username,
+                password: password
             });
 
             // if the server sends in an error message, alert() the error message

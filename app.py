@@ -10,7 +10,7 @@ import db
 import secrets
 from hashlib import sha256
 from datetime import timedelta
-
+import ssl
 #hiii
 
 # import logging
@@ -47,8 +47,11 @@ def login_user():
         abort(404)
 
     username = request.json.get("username")
-    password = hashFunc(request.json.get("password"))
+    password = request.json.get("password")
 
+    if not username.isalnum():
+        return "Error: Invalid user"
+    
     user =  db.get_user(username)
     if user is None:
         return "Error: User does not exist!"
@@ -76,7 +79,10 @@ def signup_user():
         abort(404)
 
     username = request.json.get("username")
-    password = hashFunc(request.json.get("password"))
+    password = request.json.get("password")
+    
+    if not username.isalnum() or len(username) > 12:
+        return "Please only use letters or numbers for your username."
     
     if db.get_user(username) is None:
         db.insert_user(username, password)
@@ -102,11 +108,8 @@ def home():
     return render_template("home.jinja", username=request.args.get("username"), friend_list = friends, requests=requests)
 
 
-#simple hashing function
-def hashFunc(s):
-    return sha256(s.encode('utf-8')).hexdigest()
-
-
 if __name__ == '__main__':
-    socketio.run(app)
+    #socketio.run(app)
+    app.run(ssl_context=("localhost+2.pem", "localhost+2-key.pem"))
+    
 

@@ -118,8 +118,7 @@
     </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 <script src="/static/js/libs/socket.io.min.js"></script>
 <script>
     let room_id = 0;
@@ -127,7 +126,7 @@
 
     BigInt.prototype.toJSON = function() { return this.toString(); };
 
-    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)));
+    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)), secure=true);
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
