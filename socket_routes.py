@@ -104,6 +104,14 @@ def display_connection(room_id):
     if check_connection(room_id):
         emit("incoming", ("You are now connected!", "green"), to=room_id)
 
+# leave room event handler
+@socketio.on("leave")
+def leave(username, room_id):
+    emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
+    emit("not_connected", to=room_id)
+    leave_room(room_id)
+    room.leave_room(username)
+
 @socketio.on("add")
 def send_request(username, new_friend):
     if not new_friend.isalnum():
@@ -112,14 +120,6 @@ def send_request(username, new_friend):
     if db.get_user(new_friend) is None:
         return "User does not exist!"
     return db.send_request(username, new_friend)
-
-# leave room event handler
-@socketio.on("leave")
-def leave(username, room_id):
-    emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
-    emit("not_connected", to=room_id)
-    leave_room(room_id)
-    room.leave_room(username)
 
 @socketio.on("accept")
 def accept_request(username, requester):

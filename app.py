@@ -109,7 +109,7 @@ def home():
 
 
 if __name__ == '__main__':
-    #socketio.run(app)
-    app.run(ssl_context=("localhost+2.pem", "localhost+2-key.pem"))
+    socketio.run(app)
+    #app.run(ssl_context=("localhost+2.pem", "localhost+2-key.pem"))
     
 

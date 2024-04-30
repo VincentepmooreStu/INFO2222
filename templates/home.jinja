@@ -127,7 +127,7 @@
 
     BigInt.prototype.toJSON = function() { return this.toString(); };
 
-    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)), secure=true);
+    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000);
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -207,23 +207,6 @@
             }
     }
 
-    function add_friend() {
-        let new_friend = $("#requestee").val();
-        $("#requestee").val("");
-        // pass in the receiver of our message to the server
-        // as well as the current user's username
-        socket.emit("add", username, new_friend, (res) => {
-            // res is a string with the error message if the error occurs
-            // this is a pretty bad way of doing error handling, but watevs
-            if (typeof res == "string") {
-                alert(res);
-                return;
-            }
-            reload();
-        });
-
-    }
-
     // Gets shared keys for diffie helman from server and stores in cookies
     function get_shared_keys() {
         socket.emit("request_shared_keys", (p, g) => {
@@ -237,7 +220,6 @@
         p = BigInt(parseInt(Cookies.get('P')));
         a = BigInt(parseInt(Cookies.get('secret_key')));
         A = (g ** a) % p;
-        //add_message(String(A));
         socket.emit('send_pub', A, false, parseInt(Cookies.get("room_id")));
     }
 
@@ -246,8 +228,7 @@
         p = BigInt(parseInt(Cookies.get('P')));
         a = BigInt(parseInt(Cookies.get('secret_key')));
         A = (g ** a) % p;
-        Cookies.set('shared_key', (BigInt(B) ** a) % p);
-        //add_message(String(Cookies.get('shared_key')));
+        Cookies.set('shared_key', (BigInt(B) ** a) % p, secure=true);
         if (!is_B){
             socket.emit('send_pub', A, true, parseInt(Cookies.get("room_id")));
         }
@@ -317,6 +298,23 @@
         let box = $("#message_box");
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
+    }
+
+    function add_friend() {
+        let new_friend = $("#requestee").val();
+        $("#requestee").val("");
+        // pass in the receiver of our message to the server
+        // as well as the current user's username
+        socket.emit("add", username, new_friend, (res) => {
+            // res is a string with the error message if the error occurs
+            // this is a pretty bad way of doing error handling, but watevs
+            if (typeof res == "string") {
+                alert(res);
+                return;
+            }
+            reload();
+        });
+
     }
 
     function accept_request(requester) {
