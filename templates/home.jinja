@@ -93,7 +93,8 @@
         <td style="test-align: center;">
             <div class="vertical-menu">
                 {% for request in requests %}
-                <button onclick="accept_request('{{ request }}')">{{ request }}</button>
+                <button onclick="accept_request('{{ request }}')">Accept {{ request }}</button>
+                <button onclick="decline_request('{{ request }}')">Decline {{ request }}</button>
                 {% else %}
                 <h2>No requests.</h2>
                 {% endfor %}
@@ -214,10 +215,11 @@
         socket.emit("add", username, new_friend, (res) => {
             // res is a string with the error message if the error occurs
             // this is a pretty bad way of doing error handling, but watevs
-            if (typeof res != "number") {
+            if (typeof res == "string") {
                 alert(res);
                 return;
             }
+            reload();
         });
 
     }
@@ -319,10 +321,20 @@
 
     function accept_request(requester) {
         res = socket.emit("accept", username, requester);
-        if (typeof res != "number" || typeof res != null) {
+        if (typeof res == "string") {
                 alert(res);
                 return;
             }
+        location.reload();
+    }
+
+    function decline_request(requester) {
+        res = socket.emit("decline", username, requester);
+        if (typeof res == "string") {
+                alert(res);
+                return;
+            }
+        location.reload();
     }
 
     function encrypt(plain_text, secret) {

@@ -99,7 +99,22 @@ def accept_request(requester, requestee):
         session.execute(sql)
         session.commit()
         insert_friendship(requester, requestee)
-        return "Request accepted!"
+        return 1
+    
+def decline_request(requester, requestee):
+    with Session(engine) as session:
+        request_ID = requester + requestee
+        request_ID2 = requestee + requester
+    
+        if session.query(Requests).filter_by(requestID=request_ID).first() is None:
+            if session.query(Requests).filter_by(requestID=request_ID2).first() is None:
+                return 'No request to accept!'
+
+        sql = delete(Requests).where(Requests.requestID == request_ID)
+        sql = delete(Requests).where(Requests.requestID == request_ID2)
+        session.execute(sql)
+        session.commit()
+        return 1
 
 def get_friend_requests(username):
     with Session(engine) as session:

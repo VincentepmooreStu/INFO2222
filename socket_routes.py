@@ -123,4 +123,11 @@ def leave(username, room_id):
 
 @socketio.on("accept")
 def accept_request(username, requester):
-    return db.accept_request(username, requester)
+    res = db.accept_request(username, requester)
+    return res
+
+@socketio.on("decline")
+def accept_request(username, requester):
+    res = db.decline_request(username, requester)
+    print(res)
+    return res
