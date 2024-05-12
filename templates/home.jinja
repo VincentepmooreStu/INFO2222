@@ -127,7 +127,7 @@
 
     BigInt.prototype.toJSON = function() { return this.toString(); };
 
-    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000);
+    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)));
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -312,7 +312,6 @@
                 alert(res);
                 return;
             }
-            reload();
         });
 
     }
@@ -323,7 +322,6 @@
                 alert(res);
                 return;
             }
-        location.reload();
     }
 
     function decline_request(requester) {
@@ -332,7 +330,6 @@
                 alert(res);
                 return;
             }
-        location.reload();
     }
 
     function encrypt(plain_text, secret) {
