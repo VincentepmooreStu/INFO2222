@@ -20,6 +20,7 @@ import ssl
 # log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
+app.secret_key = "bob"
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
@@ -58,14 +59,17 @@ def login_user():
 
     if user.password != password:
         return "Error: Password does not match!"
+
+    session["user"] = username
+
+    return url_for('home')
     
-    return url_for('home', username=username)
+    # return url_for('home', username=username)
 
 @app.route("/logout")
 def logout():
     session.clear()  # clears session data
     return index()
-
 
 # handles a get request to the signup page
 @app.route("/signup")
@@ -101,12 +105,21 @@ def fetch_friends(username: str):
 # home page, where the messaging app is
 @app.route("/home")
 def home():
-    if request.args.get("username") is None:
-        abort(404)
-    friends = db.get_friendships(request.args.get("username")) # get friends
-    requests = db.get_friend_requests(request.args.get("username")) # get friend requests
-    return render_template("home.jinja", username=request.args.get("username"), friend_list = friends, requests=requests)
 
+    if "user" in session: 
+        user = session["user"]
+    else:
+        return render_template("login.jinja")
+
+    friends = db.get_friendships(user) # get friends
+    requests = db.get_friend_requests(user) # get friend requests
+    return render_template("home.jinja", username=user, friend_list = friends, requests=requests)
+
+    # if request.args.get("username") is None:
+    #     abort(404)
+    # friends = db.get_friendships(request.args.get("username")) # get friends
+    # requests = db.get_friend_requests(request.args.get("username")) # get friend requests
+    # return render_template("home.jinja", username=request.args.get("username"), friend_list = friends, requests=requests)
 
 if __name__ == '__main__':
     socketio.run(app)

@@ -38,6 +38,15 @@
         display: inline-block;
     }
 
+    #message_history_list {
+        border: 1px solid black;
+        height: 400px;
+        width: 200px;
+        overflow: auto;
+        padding: 2px;
+        display: inline-block;
+    }
+
     .text {
         margin-top: 2px;
         margin-bottom: 2px;
@@ -98,6 +107,13 @@
                 {% else %}
                 <h2>No requests.</h2>
                 {% endfor %}
+            </div>
+        </td>
+    </section>
+        <section id="message_history_list">
+        <h2>Message History</h2>
+        <td style="test-align: center;">
+            <div class="vertical-menu">
             </div>
         </td>
     </section>
@@ -181,6 +197,7 @@
             alert("Your connection has been compromised!")
         } else {
             add_message(`${username}: ${message}`);
+            add_message2(`${username}: ${message}`);
         }
     })
 
@@ -296,6 +313,12 @@
     // called when an incoming message has reached a client
     function add_message(message, color = "black") {
         let box = $("#message_box");
+        let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
+        box.append(child);
+    }
+
+    function add_message2(message, color = "black") {
+        let box = $("#message_history_list");
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
     }
