@@ -109,17 +109,51 @@ def home():
     if "user" in session: 
         user = session["user"]
     else:
-        return render_template("login.jinja")
+        return render_template("index.jinja")
 
     friends = db.get_friendships(user) # get friends
     requests = db.get_friend_requests(user) # get friend requests
     return render_template("home.jinja", username=user, friend_list = friends, requests=requests)
 
-    # if request.args.get("username") is None:
-    #     abort(404)
-    # friends = db.get_friendships(request.args.get("username")) # get friends
-    # requests = db.get_friend_requests(request.args.get("username")) # get friend requests
-    # return render_template("home.jinja", username=request.args.get("username"), friend_list = friends, requests=requests)
+@app.route("/articles")
+def articles():
+
+    if "user" in session: 
+        user = session["user"]
+    else:
+        return render_template("index.jinja")
+          
+    return render_template("articles.jinja", username=user)
+
+@app.route("/account")
+def account():
+
+    if "user" in session: 
+        user = session["user"]
+    else:
+        return render_template("index.jinja")
+          
+    return render_template("account.jinja", username=user)
+
+@app.route("/friends")
+def friends():
+
+    if "user" in session: 
+        user = session["user"]
+    else:
+        return render_template("index.jinja")
+          
+    return render_template("friends.jinja", username=user)
+
+@app.route("/settings")
+def settings():
+
+    if "user" in session: 
+        user = session["user"]
+    else:
+        return render_template("index.jinja")
+          
+    return render_template("settings.jinja", username=user)
 
 if __name__ == '__main__':
     socketio.run(app)

@@ -1,0 +1,52 @@
+{% extends 'base.jinja' %}
+
+{% block content %}
+<style>
+    #message_box {
+        border: 1px solid black;
+        height: 400px;
+        width: 800px;
+        overflow: auto;
+        padding: 2px;
+        display: inline-block;
+    }
+
+    /* Additional styles for article list */
+    .article-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .article-list-item {
+        margin-bottom: 10px;
+    }
+
+    .article-link {
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .article-link:hover {
+        color: darkblue;
+    }
+</style>
+
+<head>
+    {% include "navbar.jinja" %}
+</head>
+
+<h1>Articles</h1>
+<main>
+    <section id="message_box">
+        <ul class="article-list">
+            {% for article in articles %}
+                <li class="article-list-item">
+                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-link">{{ article.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+</main>
+{% endblock %}

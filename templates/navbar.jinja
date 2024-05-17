@@ -1,0 +1,52 @@
+<style>
+    nav {
+        background-color: #33333318;
+        display: flex;
+        justify-content: space-between;
+        align-items: center; 
+        padding: 10px 20px; 
+    }
+
+    nav ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+         
+    }
+
+    nav ul li {
+        display: inline;
+        margin-right: 10px; /* Add spacing between items */
+    }
+
+    .nav-link {
+        display: block;
+        padding: 10px 100px;
+        color: #000000;
+        text-decoration: none;
+    }
+
+    .nav-link:hover {
+        background-color: #55555557;
+    }
+
+    #username {
+        padding-left: 50px;
+    }
+</style>
+
+<nav>
+    <ul>
+        <li><a href={{ url_for('articles') }} class="nav-link">Articles</a></li>
+        <li><a href={{ url_for('home') }} class="nav-link">Messages</a></li>
+        <li><a href={{ url_for('friends') }} class="nav-link">Friends</a></li>
+        <li><a href={{ url_for('settings') }} class="nav-link">Settings</a></li>
+        <li><a href={{ url_for('account') }} class="nav-link">Account</a></li>
+    </ul>
+    <div class="username">Username: {{ username }}</div> <!-- Move username to the right -->
+</nav>
+
+<script>
+</script>

@@ -3,13 +3,8 @@
 -->
 {% extends 'base.jinja' %}
 
-
 {% block content %}
 <style>
-    nav {
-        border-bottom: 1px solid black;
-        overflow: auto
-    }
 
     #message_box {
         border: 1px solid black;
@@ -70,15 +65,15 @@
     }
 </style>
 
-<!--Navbar, you'll see the username here-->
-<nav style="border-bottom: 1px solid black;">
-    <ol style="float: right">
-        <li style="display:inline-block">Username: {{ username }} </li>
-    </ol>
-</nav>
+<head>
+
+    {% include "navbar.jinja" %}
+
+</head>
 
 <h1>Messaging App </h1>
 <main>
+    
     <!-- The messages are displayed here -->
     <section id="message_box"></section>
 
