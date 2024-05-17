@@ -119,6 +119,7 @@ def send_request(username, new_friend):
 
     if db.get_user(new_friend) is None:
         return "User does not exist!"
+    emit("update_request_list")
     return db.send_request(username, new_friend)
 
 @socketio.on("accept")
@@ -129,5 +130,12 @@ def accept_request(username, requester):
 @socketio.on("decline")
 def accept_request(username, requester):
     res = db.decline_request(username, requester)
-    print(res)
     return res
+
+@socketio.on("get_friends")
+def get_friends(username):
+    return db.get_friendships(username)
+
+@socketio.on("get_friend_requests")
+def get_friends(username):
+    return db.get_friend_requests(username)

@@ -1,5 +1,104 @@
 {% extends 'base.jinja' %}
 
+{% block content %}
+<style>
+    #friends_list {
+        border: 1px solid black;
+        height: 400px;
+        width: 200px;
+        overflow: auto;
+        padding: 2px;
+        display: inline-block;
+    }
+
+    #request_list {
+        border: 1px solid black;
+        height: 400px;
+        width: 200px;
+        overflow: auto;
+        padding: 2px;
+        display: inline-block;
+    }
+</style>
+
 <head>
     {% include "navbar.jinja" %}
 </head>
+
+<body>
+    <section id="friends_list">
+        <h2>Your Friends</h2>
+        <div class="vertical-menu" id="friends_menu">
+            <!-- Friend list items will be inserted here dynamically -->
+        </div>
+    </section>
+    <section id="request_list">
+        <h2>Requests</h2>
+        <div class="vertical-menu" id="requests_menu">
+            <!-- Request list items will be inserted here dynamically -->
+        </div>
+    </section>
+</body>
+
+<script>
+    const socket = io();
+    let username = Cookies.get("username");
+
+    function accept_request(requester) {
+        socket.emit("accept", username, requester);
+    }
+
+    function decline_request(requester) {
+        socket.emit("decline", username, requester);
+    }
+
+    function update_friends() {
+        socket.emit("get_friends", username, (res) => {
+            const friendsMenu = document.getElementById("friends_menu");
+            friendsMenu.innerHTML = "";
+
+            res.forEach(friend => {
+                const li = document.createElement("li");
+                li.textContent = friend;
+                friendsMenu.appendChild(li);
+            });
+        });
+    }
+
+    function update_requests() {
+        socket.emit("get_friend_requests", username, (res) => {
+            const requestsMenu = document.getElementById("requests_menu");
+            requestsMenu.innerHTML = "";
+            res.forEach(request => {
+                const buttonAccept = document.createElement("button");
+                buttonAccept.textContent = "Accept " + request;
+                buttonAccept.onclick = function() {
+                    accept_request(request);
+                };
+
+                const buttonDecline = document.createElement("button");
+                buttonDecline.textContent = "Decline " + request;
+                buttonDecline.onclick = function() {
+                    decline_request(request);
+                };
+
+                const div = document.createElement("div");
+                div.appendChild(buttonAccept);
+                div.appendChild(buttonDecline);
+
+                requestsMenu.appendChild(div);
+            });
+        });
+    }
+
+    setInterval(update_friends, 1000);
+    setInterval(update_requests, 1000);
+
+    // Call update functions when the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        update_friends();
+        update_requests();
+    });
+
+</script>
+{% endblock %}

@@ -142,8 +142,11 @@ def friends():
         user = session["user"]
     else:
         return render_template("index.jinja")
-          
-    return render_template("friends.jinja", username=user)
+    
+    friends = db.get_friendships(user) # get friends
+    requests = db.get_friend_requests(user) # get friend requests
+
+    return render_template("friends.jinja", username=user, friend_list = friends, requests=requests)
 
 @app.route("/settings")
 def settings():
