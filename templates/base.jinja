@@ -9,6 +9,37 @@ this is equivalent to a bunch of glob imports -> import * from jquery.
 Yeah I know it's pretty ugly...
 -->
 <!DOCTYPE html>
+
+<style>
+    .dark-mode {
+        background-color: black;
+        color: white;
+    }
+
+    .dark-mode #message_box,
+    .dark-mode #friends_list,
+    .dark-mode #request_list,
+    .dark-mode #message_history_list {
+        border-color: white;
+    }
+
+    .dark-mode .vertical-menu a {
+        color: white;
+    }
+
+    .dark-mode .vertical-menu a:hover {
+        background-color: #555;
+    }
+
+    .dark-mode .nav-link {
+        color: white;
+    }
+
+    .dark-mode .nav-link:hover {
+        background-color: #555;
+    }
+</style>
+
 <html>
     <head>
         <title>HTML :)</title> 
@@ -24,3 +55,17 @@ Yeah I know it's pretty ugly...
         {% block content %} {% endblock %}
     </body>
 </html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        if (Cookies.get('dark_mode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    });
+
+    function darkMode() {
+        var element = document.body;
+        element.classList.toggle("dark-mode");
+        Cookies.set('dark_mode', element.classList.contains('dark-mode'));
+    }
+</script>
