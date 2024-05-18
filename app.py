@@ -4,7 +4,7 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
-from flask import Flask, render_template, request, abort, url_for, session
+from flask import Flask, render_template, request, abort, url_for, session, jsonify
 from flask_socketio import SocketIO
 import db
 import secrets
@@ -157,6 +157,73 @@ def settings():
         return render_template("index.jinja")
           
     return render_template("settings.jinja", username=user)
+
+@app.route("/articles/add_post", methods=["POST"])
+def add_post():
+    if not request.is_json:
+        abort(404)
+
+    username = request.json.get('username')
+    title = request.json.get("title")
+    content = request.json.get("content")
+
+    # Check if title already exists
+    if db.check_title(title):
+        return "Error: Title already exists!"
+
+    # Add the post
+    db.add_post(username, title, content)
+
+    return "Success!"
+
+@app.route("/articles/edit_post", methods=["POST"])
+def edit_post():
+    if not request.is_json:
+        abort(404)
+
+    title = request.json.get("title")
+    content = request.json.get("content")
+
+    # Check if title already exists
+    if db.check_title(title):
+        return "Error: Title already exists!"
+
+    # Add the post
+    return "Success!"
+
+
+@app.route("/articles/delete_post", methods=["POST"])
+def delete_post():
+    if not request.is_json:
+        abort(404)
+
+    title = request.json.get("title")
+
+    if not db.check_title(title):
+        return "Error: Title does not exist!"
+
+    db.delete_post(title)
+
+    return f"Deleted post '{title}'"
+
+@app.route("/articles/get_post_titles", methods=["GET"])
+def get_post_titles():
+    titles = db.get_post_titles()
+    return titles
+
+@app.route("/articles/get_post_content", methods=["POST"])
+def get_post_content():
+    if not request.is_json:
+        abort(404)
+
+    title = request.json.get("title")
+
+    content = db.get_post_content(title)
+
+    if content is None:
+        return "Error: Title does not exist!"
+    
+    return jsonify(content)
 
 if __name__ == '__main__':
     socketio.run(app)

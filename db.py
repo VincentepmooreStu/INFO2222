@@ -122,3 +122,36 @@ def get_friend_requests(username):
         values = result.fetchall()
         request_list = [v[0] for v in values]
         return request_list
+
+#Article db functions
+def add_post(username, title, content):
+    with Session(engine) as session:
+        article = Articles(article_title = title, article_content = content, poster_name = username)
+        session.add(article)
+        session.commit()
+    
+def delete_post(title):
+    with Session(engine) as session:
+        sql = delete(Articles).where(Articles.article_title == title)
+        session.execute(sql)
+        session.commit()
+
+def get_post_titles():
+    with Session(engine) as session:
+        result = session.execute(session.query(Articles.article_title))
+        values = result.fetchall()
+        titles = [v[0] for v in values]
+        return titles
+
+def check_title(title):
+    with Session(engine) as session:
+        return session.query(Articles).filter_by(article_title=title).first() is not None
+
+def get_post_content(title):
+    with Session(engine) as session:
+        content = session.execute(session.query(Articles.article_content).filter_by(article_title=title)).fetchall()
+        name = session.execute(session.query(Articles.poster_name).filter_by(article_title=title)).fetchall()
+        content = content[0][0]
+        name = name[0][0]
+        print(name)
+        return (content, name)

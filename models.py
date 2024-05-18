@@ -10,7 +10,7 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
-from sqlalchemy import String
+from sqlalchemy import String, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from typing import Dict
 import datetime
@@ -48,6 +48,13 @@ class Requests(Base):
     requestID: Mapped[str] = mapped_column(String, primary_key=True)
     requester: Mapped[str] = mapped_column(String)
     requestee: Mapped[str] = mapped_column(String)
+
+#model to store articles
+class Articles(Base):
+    __tablename__ = "articles"
+    article_title: Mapped[str] = mapped_column(String, primary_key=True)
+    article_content: Mapped[str] = mapped_column(String)
+    poster_name: Mapped[str] = mapped_column(String)
 
 #message history model
 # class Message(Base):

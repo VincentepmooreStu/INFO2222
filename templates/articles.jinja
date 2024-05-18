@@ -2,34 +2,147 @@
 
 {% block content %}
 <style>
-    #message_box {
-        border: 1px solid black;
-        height: 400px;
-        width: 800px;
-        overflow: auto;
-        padding: 2px;
-        display: inline-block;
+    #articles_container {
+        display: flex;
+        margin-left: 50px;
+        margin-right: 100px;
     }
 
-    /* Additional styles for article list */
-    .article-list {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
+    #article_titles {
+        margin-right: 20px;
+    }
+
+    #article_list {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        max-height: 800px;
+        width: 200px;
+        overflow-y: auto;
+        padding: 10px;
+        padding-left: 30px;
+        padding-right: 30px;
+        background-color: #f9f9f9;
     }
 
     .article-list-item {
-        margin-bottom: 10px;
-    }
-
-    .article-link {
-        color: blue;
-        text-decoration: underline;
+        margin-bottom: 5px;
+        padding: 8px;
+        background-color: #fff;
+        border-radius: 3px;
         cursor: pointer;
     }
 
-    .article-link:hover {
-        color: darkblue;
+    .article-list-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    .delete-button {
+        margin-left: 5px;
+        background-color: #ff9b94;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .delete-button:hover {
+        background-color: #a15d5d;
+    }
+
+    /* Style for viewing articles */
+    #view_post_container {
+        margin-left: 70px;
+        margin-top: 68px;
+    }
+
+    #go_back_button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #874caf;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    #go_back_button:hover {
+        background-color: #7745a0;
+    }
+
+    #view_post_section {
+        padding: 20px;
+        width: 500px;
+        height: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f977;
+    }
+
+    #view_post_title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    #view_post_author {
+        font-size: 18px;
+        margin-bottom: 40px;
+    }
+
+    #view_post_content {
+        font-size: 16px;
+        /* Adjust as needed */
+        line-height: 1.6;
+        /* Adjust as needed */
+    }
+
+
+
+    /* Style for input boxes */
+    #add_post_section {
+        margin-left: 70px;
+
+    }
+
+    .input-container {
+        margin-bottom: 10px;
+    }
+
+    .input-container input[type="text"] {
+        width: 500px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+        margin-bottom: 5px;
+    }
+
+    .input-container textarea {
+        width: 500px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+        margin-bottom: 5px;
+        resize: vertical;
+        /* Allow vertical resizing */
+        height: 400px;
+        /* Set a default height */
+    }
+
+    .input-container input[type="submit"] {
+        background-color: #874caf;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .input-container input[type="submit"]:hover {
+        background-color: #7745a0;
     }
 </style>
 
@@ -37,16 +150,149 @@
     {% include "navbar.jinja" %}
 </head>
 
-<h1>Articles</h1>
 <main>
-    <section id="message_box">
-        <ul class="article-list">
-            {% for article in articles %}
-                <li class="article-list-item">
-                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-link">{{ article.title }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-    </section>
+    <div id="articles_container">
+        <section id="article_titles">
+
+            <h2>Articles</h2>
+            <div class="vertical-menu" id="article_list">
+                <!-- Article list items will be inserted here dynamically -->
+            </div>
+        </section>
+
+        <!-- Input boxes for adding a new post -->
+        <section id="add_post_section" class="input-container">
+            <h2>Add New Post</h2>
+            <div class="input-container">
+                <input type="text" id="post_title" placeholder="Title">
+            </div>
+            <div class="input-container">
+                <textarea id="post_content" placeholder="Content"></textarea>
+            </div>
+            <div class="input-container">
+                <input type="submit" value="Add Post" onclick="addPost()">
+            </div>
+        </section>
+        <section id="view_post_container" style="display: none;">
+            <section id="view_post_section">
+                <h1 id="view_post_title"></h1>
+                <h2 id="view_post_author"></h2>
+                <p id="view_post_content"></p>
+            </section>
+            <a id="go_back_button" href="{{ url_for('articles') }}">Back</a>
+
+        </section>
+    </div>
+
 </main>
+
+<script>
+    async function addPost() {
+        let post_title = $("#post_title").val();
+        $("#post_title").val("");
+        let post_content = $("#post_content").val();
+        $("#post_content").val("");
+
+        let add_post_url = "{{ url_for('add_post') }}";
+
+        let res = await axios.post(add_post_url, {
+            username: Cookies.get("username"),
+            title: post_title,
+            content: post_content
+        });
+
+        if (res.data != null) {
+            alert(res.data);
+            return;
+        }
+    }
+
+    async function deletePost(title) {
+        let delete_post_url = "{{ url_for('delete_post') }}";
+
+        let res = await axios.post(delete_post_url, {
+            title: title,
+        });
+
+        if (res.data != null) {
+            alert(res.data);
+            return;
+        }
+    }
+
+    async function editPost(title, new_content) {
+        let edit_post_url = "{{ url_for('edit_post') }}";
+
+        let res = await axios.post(edit_post_url, {
+            title: title,
+            content: new_content
+        });
+
+        if (res.data != null) {
+            alert(res.data);
+            return;
+        }
+    }
+
+    async function load_post(title) {
+        let content_post_url = "{{ url_for('get_post_content') }}";
+        let res = await axios.post(content_post_url, {
+            title: title
+        });
+
+        if (typeof res.data == 'string') {
+            alert(res.data);
+            return;
+        }
+
+        data = res.data;
+        name = data[1];
+        content = data[0];
+
+        console.log(name)
+
+        author = 'Written by: ' + name;
+        $('#add_post_section').hide();
+        $('#view_post_title').text(title);
+        $('#view_post_author').text(author);
+        $('#view_post_content').text(content);
+        $('#view_post_container').show();
+    }
+
+    function createDeleteButton(title) {
+        const button = document.createElement('button');
+        button.textContent = 'Delete';
+        button.classList.add('delete-button');
+        button.addEventListener('click', () => {
+            deletePost(title);
+        });
+        return button;
+    }
+
+    async function update_article_list() {
+        let get_articles_url = "{{ url_for('get_post_titles') }}";
+        res = await axios.get(get_articles_url);
+        articles = res.data;
+
+        const articles_list = document.getElementById("article_list");
+        articles_list.innerHTML = "";
+
+        articles.forEach(title => {
+            const li = document.createElement("div");
+            li.textContent = title;
+
+            const deleteButton = createDeleteButton(title);
+            li.appendChild(deleteButton);
+
+            li.classList.add("article-list-item");
+            li.addEventListener("click", () => {
+                load_post(title);
+            });
+            articles_list.appendChild(li);
+        });
+    }
+
+    update_article_list();
+    setInterval(update_article_list, 1000);
+</script>
 {% endblock %}

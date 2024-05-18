@@ -1,13 +1,40 @@
-<!-- 
-Index page, the "default" page when you visit "http://localhost/" 
- without any URL parameters at the end
- -->
 {% extends 'base.jinja' %}
 
+{% block content %}
+<style>
+    .welcome-container {
+        text-align: center;
+        margin-top: 20%;
+    }
 
-{% block content %} 
-    <h1>Hello! Welcome to the site!</h1>
-    <p><a href={{ url_for('signup') }}> Sign Up</a></p>
-    <p><a href={{ url_for('login') }}> Login</a></p>
-    
+    .welcome-heading {
+        font-size: 32px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .link-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #6200ffc5;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .link-button:hover {
+        background-color: #3600b3;
+    }
+
+    .link-button + .link-button {
+        margin-left: 20px;
+    }
+</style>
+
+<div class="welcome-container">
+    <h1 class="welcome-heading">Hello! Welcome to the site!</h1>
+    <a href="{{ url_for('signup') }}" class="link-button">Sign Up</a>
+    <a href="{{ url_for('login') }}" class="link-button">Login</a>
+</div>
 {% endblock %}

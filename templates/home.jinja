@@ -5,12 +5,6 @@
 
 {% block content %}
 <style>
-
-    .dark-mode {
-        background-color: black;
-        color: white;
-    }
-
     #message_box {
         border: 1px solid black;
         height: 400px;
@@ -66,8 +60,7 @@
         background-color: #ccc;
     }
 
-    .vertical-menu a.active {
-    }
+    .vertical-menu a.active {}
 </style>
 
 <head>
@@ -78,7 +71,7 @@
 
 <h1>Messaging App </h1>
 <main>
-    
+
     <!-- The messages are displayed here -->
     <section id="message_box"></section>
 
@@ -97,20 +90,8 @@
             </div>
         </td>
     </section>
-    <section id="request_list">
-        <h2>Requests</h2>
-        <td style="test-align: center;">
-            <div class="vertical-menu">
-                {% for request in requests %}
-                <button onclick="accept_request('{{ request }}')">Accept {{ request }}</button>
-                <button onclick="decline_request('{{ request }}')">Decline {{ request }}</button>
-                {% else %}
-                <h2>No requests.</h2>
-                {% endfor %}
-            </div>
-        </td>
-    </section>
-        <section id="message_history_list">
+
+    <section id="message_history_list">
         <h2>Message History</h2>
         <td style="test-align: center;">
             <div class="vertical-menu">
@@ -142,7 +123,7 @@
     let room_id = 0;
     let connected = false;
 
-    BigInt.prototype.toJSON = function() { return this.toString(); };
+    BigInt.prototype.toJSON = function () { return this.toString(); };
 
     Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)));
 
@@ -194,7 +175,7 @@
     socket.on("incoming_from_user", (username, cipher_text, hmac) => {
         message = CryptoJS.AES.decrypt(cipher_text, Cookies.get("shared_key"));
         message = message.toString(CryptoJS.enc.Utf8);
-        if (hmac != CryptoJS.HmacSHA256(message, Cookies.get("shared_key").toString())){
+        if (hmac != CryptoJS.HmacSHA256(message, Cookies.get("shared_key").toString())) {
             alert("Your connection has been compromised!")
         } else {
             add_message(`${username}: ${message}`);
@@ -215,14 +196,14 @@
         check_connected()
         let message = $("#message").val();
         $("#message").val("");
-            if (connected) {
+        if (connected) {
             hmac = CryptoJS.HmacSHA256(message, Cookies.get("shared_key")).toString();
             cipher_text = CryptoJS.AES.encrypt(message, Cookies.get("shared_key"));
             socket.emit("send", username, cipher_text.toString(), hmac, parseInt(Cookies.get('room_id')));
-            }
-            else {
-                add_message("Cannot send message, waiting to connect ...", "grey");
-            }
+        }
+        else {
+            add_message("Cannot send message, waiting to connect ...", "grey");
+        }
     }
 
     // Gets shared keys for diffie helman from server and stores in cookies
@@ -241,13 +222,13 @@
         socket.emit('send_pub', A, false, parseInt(Cookies.get("room_id")));
     }
 
-    socket.on("key_pub", (B, is_B) =>{
+    socket.on("key_pub", (B, is_B) => {
         g = BigInt(parseInt(Cookies.get('G')));
         p = BigInt(parseInt(Cookies.get('P')));
         a = BigInt(parseInt(Cookies.get('secret_key')));
         A = (g ** a) % p;
-        Cookies.set('shared_key', (BigInt(B) ** a) % p, secure=true);
-        if (!is_B){
+        Cookies.set('shared_key', (BigInt(B) ** a) % p, secure = true);
+        if (!is_B) {
             socket.emit('send_pub', A, true, parseInt(Cookies.get("room_id")));
         }
     })
@@ -286,14 +267,14 @@
             $("#friends_list").hide();
             $("#request_list").hide();
             $("#input_box").show();
-            
+
             socket.emit("check_connected", parseInt(Cookies.get("room_id")), (res) => {
                 if (res) {
                     socket.emit("display_connection", room_id)
                     send_pub();
                 }
             })
-            
+
         });
 
     }
@@ -340,51 +321,35 @@
 
     }
 
-    function accept_request(requester) {
-        res = socket.emit("accept", username, requester);
-        if (typeof res == "string") {
-                alert(res);
-                return;
-            }
-    }
-
-    function decline_request(requester) {
-        res = socket.emit("decline", username, requester);
-        if (typeof res == "string") {
-                alert(res);
-                return;
-            }
-    }
-
     function encrypt(plain_text, secret) {
         var key = CryptoJS.enc.Utf8.parse(secret);
         let iv = CryptoJS.lib.WordArray.create(key.words.slice(0, 4));
         console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
-      
+
         // Encrypt the plaintext
         var cipherText = CryptoJS.AES.encrypt(plain_text, key, {
-          iv: iv,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7
-          });
-      return (cipherText.toString(), iv);
+            iv: iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        return (cipherText.toString(), iv);
     }
 
     function decrypt(cipherText, secret, iv) {
-      // IV is a base64 string
-      console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
-      let iv1 = CryptoJS.enc.Base64.parse(iv);
-      var key = CryptoJS.enc.Utf8.parse(secret);
-      var cipherBytes = CryptoJS.enc.Base64.parse(cipherText.replaceAll('"', ''));
+        // IV is a base64 string
+        console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
+        let iv1 = CryptoJS.enc.Base64.parse(iv);
+        var key = CryptoJS.enc.Utf8.parse(secret);
+        var cipherBytes = CryptoJS.enc.Base64.parse(cipherText.replaceAll('"', ''));
 
-      var decrypted = CryptoJS.AES.decrypt({ciphertext: cipherBytes}, key, {
-          iv: 3,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7
-      });
+        var decrypted = CryptoJS.AES.decrypt({ ciphertext: cipherBytes }, key, {
+            iv: 3,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
 
-      return decrypted.toString(CryptoJS.enc.Utf8);
-}
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    }
 
 </script>
 {% endblock %}

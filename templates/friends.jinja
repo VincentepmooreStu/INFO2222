@@ -46,10 +46,18 @@
 
     function accept_request(requester) {
         socket.emit("accept", username, requester);
+        if (typeof res == "string") {
+            alert(res);
+            return;
+        }
     }
 
     function decline_request(requester) {
         socket.emit("decline", username, requester);
+        if (typeof res == "string") {
+            alert(res);
+            return;
+        }
     }
 
     function update_friends() {
