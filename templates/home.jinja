@@ -6,6 +6,11 @@
 {% block content %}
 <style>
 
+    .dark-mode {
+        background-color: black;
+        color: white;
+    }
+
     #message_box {
         border: 1px solid black;
         height: 400px;
@@ -79,7 +84,7 @@
 
     <!-- These part ideally should be a form element, 
     but I wrote this code a year ago and I don't want to break anything...-->
-    
+
     <section id="friends_list">
         <h2>Your Friends</h2>
         <td style="test-align: center;">
@@ -128,6 +133,11 @@
         <button onclick="leave()">Leave Room</button>
         <p><a href={{ url_for('logout') }}>Logout</a></p>
     </section>
+
+
+    <div>
+        <button onclick="darkMode()">Darkmode</button>
+    </div>
 </main>
 
 
@@ -378,6 +388,11 @@
       });
 
       return decrypted.toString(CryptoJS.enc.Utf8);
+}
+
+    function darkMode() {
+        var element = document.body;
+        element.classList.toggle("dark-mode");
 }
 
 </script>
