@@ -4,7 +4,7 @@ database file, containing all the logic to interface with the sql database
 '''
 
 from sqlalchemy import create_engine, delete
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, subqueryload
 from sqlalchemy.sql import text
 from models import *
 import string
@@ -162,3 +162,30 @@ def edit_post(title, new_content):
         article = session.query(Articles).filter(Articles.article_title == title).first()
         article.article_content = new_content
         session.commit()
+
+# Comment db functions
+
+# Add a comment to an article
+def add_comment(article_title, content, poster_name):
+    with Session(engine) as session:
+        article = session.query(Articles).filter(Articles.article_title == article_title).first()
+        comment = Comment(content=content, article_title=article_title, comment_poster=poster_name)
+        article.comments.append(comment)
+        session.add(comment)
+        session.commit()
+
+# Remove a comment by its ID
+def delete_comment(comment_id):
+    with Session(engine) as session:
+        comment = session.query(Comment).filter(Comment.id == comment_id).first()
+        session.delete(comment)
+        session.commit()
+
+
+# Retrieve all comments for a specific article
+def get_comments(article_title):
+    with Session(engine) as session:
+        article = session.query(Articles).filter(Articles.article_title == article_title).options(subqueryload(Articles.comments)).first()
+        comments = [(comment.comment_poster, comment.content, comment.id) for comment in article.comments]
+        return comments
+ 

@@ -4,7 +4,7 @@
 <style>
     #articles_container {
         display: flex;
-        margin-left: 50px;
+        margin-left: 70px;
         margin-right: 100px;
     }
 
@@ -36,23 +36,10 @@
         background-color: #f0f0f0;
     }
 
-    .delete-button {
-        margin-left: 5px;
-        background-color: #ff9b94;
-        color: white;
-        border: none;
-        border-radius: 3px;
-        padding: 5px 10px;
-        cursor: pointer;
-    }
-
-    .delete-button:hover {
-        background-color: #a15d5d;
-    }
 
     /* Style for viewing articles */
     #view_post_container {
-        margin-left: 70px;
+        margin-left: 100px;
         margin-top: 68px;
     }
 
@@ -73,9 +60,10 @@
     }
 
     #view_post_section {
+        margin-top: 10px;
         padding: 20px;
         width: 500px;
-        height: 100%;
+        height: 100px%;
         border: 1px solid #ccc;
         border-radius: 5px;
         background-color: #f9f9f977;
@@ -98,7 +86,48 @@
         /* Adjust as needed */
     }
 
+    .comments {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 10px;
+    }
 
+    .comments>div {
+        margin-bottom: 10px;
+        padding: 8px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+    }
+
+    .comments>div>button {
+        margin-left: 10px;
+        background-color: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .comments>div>button:hover {
+        background-color: #e74c3c;
+    }
+
+    .input-container #add_comment_button {
+        margin-top: 5px;
+        background-color: #874caf;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .input-container #add_comment_button:hover {
+        background-color: #7745a0;
+    }
 
     /* Style for input boxes */
     #add_post_section {
@@ -148,7 +177,7 @@
     /*Style for editing articles*/
     #edit_post_container {
         margin-left: 70px;
-    } 
+    }
 
     #edit_post_title {
         font-size: 24px;
@@ -191,8 +220,6 @@
     #delete_post_button:hover {
         background-color: #8b3c3c;
     }
-
-
 </style>
 
 <head>
@@ -225,9 +252,9 @@
 
         <!-- Input boxes for adding a new post -->
         <section id="edit_post_container" style="display: none;">
-        <a id="go_back_button" href="{{ url_for('articles') }}">Back</a>
+            <a id="go_back_button" href="{{ url_for('articles') }}">Back</a>
             <section id="edit_post_section" class="input-container">
-                <h1   id="edit_post_title"></h1>
+                <h1 id="edit_post_title"></h1>
                 <h2 id="edit_post_author"></h2>
                 <div class="input-container">
                     <textarea id="edit_post_content" placeholder="Content"></textarea>
@@ -248,9 +275,18 @@
                 <h2 id="view_post_author"></h2>
                 <p id="view_post_content"></p>
             </section>
-
-
+            <section id="comment_section">
+                <h2>Comments</h2>
+                <div id="comments_list" class="comments">
+                    <!-- Comments will be inserted here dynamically -->
+                </div>
+                <div class="input-container">
+                    <input type="text" id="comment_content" placeholder="Your comment">
+                    <button id="add_comment_button" onclick="add_comment()">Add Comment</button>
+                </div>
+            </section>
         </section>
+
     </div>
 
 </main>
@@ -297,11 +333,6 @@
             title: title,
             content: new_content
         });
-
-        if (res.data != null) {
-            alert(res.data);
-        }
-
         load_post(title);
     }
 
@@ -330,6 +361,62 @@
         $('#view_post_author').text(author);
         $('#view_post_content').text(content);
         $('#view_post_container').show();
+
+        await load_comments(title);
+    }
+
+    async function load_comments(title) {
+        let get_comments_url = "{{ url_for('get_post_comments') }}";
+        let res = await axios.post(get_comments_url, {
+            article: title
+        });
+
+        if (typeof res.data == 'string') {
+            alert(res.data);
+            return;
+        }
+
+        let comments = res.data;
+        console.log(comments)
+        const commentsList = document.getElementById("comments_list");
+        commentsList.innerHTML = "";
+
+        comments.forEach(comment => {
+            const commentDiv = document.createElement("div");
+            commentDiv.innerHTML = `<strong>${comment.poster_name}</strong>: ${comment.content}`;
+            const deleteButton = document.createElement("button");
+
+            deleteButton.textContent = "Delete";
+            deleteButton.onclick = async () => {
+                await deleteComment(comment.id);
+                await load_comments(title);
+            };
+
+            commentDiv.appendChild(deleteButton);
+            commentsList.appendChild(commentDiv);
+        });
+    }
+
+    async function add_comment() {
+        let content = $("#comment_content").val();
+        $("#comment_content").val("");
+
+        let add_comment_url = "{{ url_for('add_post_comment') }}";
+
+        let res = await axios.post(add_comment_url, {
+            content: content,
+            article: Cookies.get('title'),
+            poster: Cookies.get("username")
+        });
+
+        await load_comments(Cookies.get('title'));
+    }
+
+    async function deleteComment(commentId) {
+        let delete_comment_url = "{{ url_for('delete_post_comment') }}";
+        let res = await axios.post(delete_comment_url, {
+            id: commentId
+        });
     }
 
     async function edit_post(title) {

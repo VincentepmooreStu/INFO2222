@@ -221,6 +221,41 @@ def get_post_content():
     
     return jsonify(content)
 
+@app.route("/articles/get_post_comments", methods=["POST"])
+def get_post_comments():
+
+    if not request.is_json:
+        abort(404)
+
+    article = request.json.get("article")
+    comments = db.get_comments(article)
+    formatted_comments = [{"poster_name": comment[0], "content": comment[1], "id": comment[2]} for comment in comments]
+    return jsonify(formatted_comments)
+
+@app.route("/articles/add_post_comment", methods=["POST"])
+def add_post_comment():
+
+    if not request.is_json:
+        abort(404)
+
+    content = request.json.get("content")
+    article = request.json.get("article")
+    poster = request.json.get("poster")
+    db.add_comment(article, content, poster)
+
+    return 'Posted!'
+
+@app.route("/articles/delete_post_comment", methods=["POST"])
+def delete_post_comment():
+
+    if not request.is_json:
+        abort(404)
+
+    id = request.json.get("id")
+    db.delete_comment(id)
+
+    return 'Deleted'
+    
 if __name__ == '__main__':
     socketio.run(app)
     #app.run(ssl_context=("localhost+2.pem", "localhost+2-key.pem"))
