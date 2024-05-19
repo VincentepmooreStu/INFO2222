@@ -155,3 +155,10 @@ def get_post_content(title):
         name = name[0][0]
         print(name)
         return (content, name)
+
+def edit_post(title, new_content):
+    with Session(engine) as session:
+        name = get_post_content(title)[1]
+        article = session.query(Articles).filter(Articles.article_title == title).first()
+        article.article_content = new_content
+        session.commit()

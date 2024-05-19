@@ -144,6 +144,55 @@
     .input-container input[type="submit"]:hover {
         background-color: #7745a0;
     }
+
+    /*Style for editing articles*/
+    #edit_post_container {
+        margin-left: 70px;
+    } 
+
+    #edit_post_title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    #edit_post_author {
+        font-size: 18px;
+        margin-bottom: 40px;
+    }
+
+    #edit_post_button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #e4c05e;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    #edit_post_button:hover {
+        background-color: #a08045;
+    }
+
+    #delete_post_button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #af4c4c;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    #delete_post_button:hover {
+        background-color: #8b3c3c;
+    }
+
+
 </style>
 
 <head>
@@ -173,13 +222,33 @@
                 <input type="submit" value="Add Post" onclick="addPost()">
             </div>
         </section>
+
+        <!-- Input boxes for adding a new post -->
+        <section id="edit_post_container" style="display: none;">
+        <a id="go_back_button" href="{{ url_for('articles') }}">Back</a>
+            <section id="edit_post_section" class="input-container">
+                <h1   id="edit_post_title"></h1>
+                <h2 id="edit_post_author"></h2>
+                <div class="input-container">
+                    <textarea id="edit_post_content" placeholder="Content"></textarea>
+                </div>
+                <div class="input-container">
+                    <input type="submit" value="Submit Edit" onclick="editPost(Cookies.get('title'))">
+                </div>
+            </section>
+        </section>
+
+        <!-- Area to view posts -->
         <section id="view_post_container" style="display: none;">
+            <a id="go_back_button" href="{{ url_for('articles') }}">Back</a>
+            <button id="edit_post_button" onclick="edit_post(Cookies.get('title'))">Edit</button>
+            <button id="delete_post_button" onclick="delete_post(Cookies.get('title'))">Delete</button>
             <section id="view_post_section">
                 <h1 id="view_post_title"></h1>
                 <h2 id="view_post_author"></h2>
                 <p id="view_post_content"></p>
             </section>
-            <a id="go_back_button" href="{{ url_for('articles') }}">Back</a>
+
 
         </section>
     </div>
@@ -220,9 +289,10 @@
         }
     }
 
-    async function editPost(title, new_content) {
+    async function editPost(title) {
         let edit_post_url = "{{ url_for('edit_post') }}";
-
+        let new_content = $("#edit_post_content").val();
+        $("#edit_post_content").val("");
         let res = await axios.post(edit_post_url, {
             title: title,
             content: new_content
@@ -230,8 +300,9 @@
 
         if (res.data != null) {
             alert(res.data);
-            return;
         }
+
+        load_post(title);
     }
 
     async function load_post(title) {
@@ -252,21 +323,39 @@
         console.log(name)
 
         author = 'Written by: ' + name;
+        Cookies.set('title', title);
         $('#add_post_section').hide();
+        $('#edit_post_container').hide();
         $('#view_post_title').text(title);
         $('#view_post_author').text(author);
         $('#view_post_content').text(content);
         $('#view_post_container').show();
     }
 
-    function createDeleteButton(title) {
-        const button = document.createElement('button');
-        button.textContent = 'Delete';
-        button.classList.add('delete-button');
-        button.addEventListener('click', () => {
-            deletePost(title);
+    async function edit_post(title) {
+        let content_post_url = "{{ url_for('get_post_content') }}";
+        let res = await axios.post(content_post_url, {
+            title: title
         });
-        return button;
+
+        if (typeof res.data == 'string') {
+            alert(res.data);
+            return;
+        }
+
+        data = res.data;
+        name = data[1];
+        content = data[0];
+
+        console.log(name)
+
+        author = 'Written by: ' + name;
+        $('#view_post_container').hide();
+        $('#edit_post_title').text(title);
+        $('#edit_post_author').text(author);
+        $('#edit_post_content').val(content);
+        $('#edit_post_container').show();
+        Cookies.set('title', title);
     }
 
     async function update_article_list() {
@@ -280,9 +369,6 @@
         articles.forEach(title => {
             const li = document.createElement("div");
             li.textContent = title;
-
-            const deleteButton = createDeleteButton(title);
-            li.appendChild(deleteButton);
 
             li.classList.add("article-list-item");
             li.addEventListener("click", () => {

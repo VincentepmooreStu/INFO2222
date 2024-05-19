@@ -184,11 +184,7 @@ def edit_post():
     title = request.json.get("title")
     content = request.json.get("content")
 
-    # Check if title already exists
-    if db.check_title(title):
-        return "Error: Title already exists!"
-
-    # Add the post
+    db.edit_post(title, content)
     return "Success!"
 
 
