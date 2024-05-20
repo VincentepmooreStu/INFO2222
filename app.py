@@ -196,7 +196,16 @@ def unmute_user():
 
     return 'Success'
 
+@app.route("/friends/delete_friend", methods=["POST"])
+def delete_friend():
+    if not request.is_json:
+        abort(404)
 
+    user1 = request.json.get('user1')
+    user2 = request.json.get('user2')
+    db.remove_friendship(user1, user2)
+
+    return 'Success'
 
 @app.route("/articles/add_post", methods=["POST"])
 def add_post():
@@ -246,6 +255,15 @@ def delete_post():
 def get_post_titles():
     titles = db.get_post_titles()
     return titles
+
+@app.route("/friends/get_role", methods=["POST"])
+def get_role():
+    if not request.is_json:
+        abort(404)
+
+    username = request.json.get("username")
+
+    return db.get_role(username)
 
 @app.route("/articles/get_post_content", methods=["POST"])
 def get_post_content():

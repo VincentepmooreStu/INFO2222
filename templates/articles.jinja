@@ -364,7 +364,7 @@
         $('#view_post_content').text(content);
         $('#view_post_container').show();
 
-        if (Cookies.get('role') == 'student') {
+        if (Cookies.get('role') == 'student' && Cookies.get('username') != author) {
             $('#edit_post_button').hide();
             $('#delete_post_button').hide();
         }

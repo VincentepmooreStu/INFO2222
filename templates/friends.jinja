@@ -2,22 +2,78 @@
 
 {% block content %}
 <style>
-    #friends_list {
-        border: 1px solid black;
-        height: 400px;
-        width: 200px;
-        overflow: auto;
-        padding: 2px;
-        display: inline-block;
+    /* Common styles */
+    .container {
+        display: flex;
     }
 
-    #request_list {
+    .section {
         border: 1px solid black;
         height: 400px;
         width: 200px;
         overflow: auto;
+        margin-top: 20px;
+        margin-right: 70px;
         padding: 2px;
-        display: inline-block;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .heading {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .card {
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .card h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .card_buttons button {
+        padding: 5px 10px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .card_buttons button:hover {
+        background-color: #ddd;
+    }
+
+    .invite-box {
+        margin-top: 20px;
+    }
+
+    .invite-box input[type="text"] {
+        padding: 8px;
+        width: 150px;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+    }
+
+    .invite-box button {
+        padding: 8px 15px;
+        background-color: #6200ffc5;
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .invite-box button:hover {
+        background-color: #3600b3;
     }
 </style>
 
@@ -26,23 +82,27 @@
 </head>
 
 <body>
-    <section id="friends_list">
-        <h2>Your Friends</h2>
-        <div class="vertical-menu" id="friends_menu">
-            <!-- Friend list items will be inserted here dynamically -->
-        </div>
-    </section>
-    <section id="request_list">
-        <h2>Requests</h2>
-        <div class="vertical-menu" id="requests_menu">
-            <!-- Request list items will be inserted here dynamically -->
-        </div>
-    </section>
-    <section id="invite_box">
-        <p class="text">Send Friend Request: </p>
-        <input id="requestee" placeholder="username">
+    <div class="container">
+        <section class="section" id="friends_list">
+            <h2 class="heading">Your Friends</h2>
+            <div id="friends_menu">
+                <!-- Friend list items will be inserted here dynamically -->
+            </div>
+        </section>
+
+        <section class="section" id="request_list">
+            <h2 class="heading">Requests</h2>
+            <div id="requests_menu">
+                <!-- Request list items will be inserted here dynamically -->
+            </div>
+        </section>
+    </div>
+
+    <div class="invite-box">
+        <p class="text">Send Friend Request:</p>
+        <input id="requestee" type="text" placeholder="Enter username">
         <button onclick="add_friend()">Send</button>
-    </section>
+    </div>
 </body>
 
 <script>
@@ -65,41 +125,90 @@
         }
     }
 
-    function update_friends() {
-        socket.emit("get_friends", username, (res) => {
+    async function delete_friend(friend) {
+        let delete_friend_url = "{{ url_for('delete_friend') }}";
+        await axios.post(delete_friend_url, {
+            user1: Cookies.get('username'),
+            user2: friend
+        })
+        update_friends();
+    }
+
+    async function update_friends() {
+        socket.emit("get_friends", username, async (res) => {
             const friendsMenu = document.getElementById("friends_menu");
             friendsMenu.innerHTML = "";
 
-            res.forEach(friend => {
-                const li = document.createElement("li");
-                li.textContent = friend;
-                friendsMenu.appendChild(li);
+            for (friend of res) {
+                friend_card = document.createElement("div");
+                friend_card.classList.add("card");
+                online = await check_online(friend);
+                console.log(online)
+
+                heading = document.createElement("h3");
+                if (online) {
+                    heading.textContent = `(Online) ${friend}`;
+                } else {
+                    heading.textContent = `${friend}`;
+                }
+                friend_card.appendChild(heading);
+
+                button_remove = document.createElement("button");
+                button_remove.classList.add("card_buttons");
+                button_remove.textContent = "Remove";
+                button_remove.onclick = function () {
+                    delete_friend(friend);
+
+                    update_friends();
+                };
+
+                friend_card.appendChild(button_remove);
+                friendsMenu.appendChild(friend_card);
+            };
+        });
+    }
+
+    async function check_online(username) {
+        return new Promise((resolve, reject) => {
+            socket.emit("check_online", username, (res) => {
+                resolve(res);
             });
         });
     }
 
     function update_requests() {
         socket.emit("get_friend_requests", username, (res) => {
-            const requestsMenu = document.getElementById("requests_menu");
+            requestsMenu = document.getElementById("requests_menu");
             requestsMenu.innerHTML = "";
+
             res.forEach(request => {
-                const buttonAccept = document.createElement("button");
-                buttonAccept.textContent = "Accept " + request;
-                buttonAccept.onclick = function() {
+                request_card = document.createElement("div");
+                request_card.classList.add("card");
+
+                heading = document.createElement("h3");
+                heading.textContent = request;
+                request_card.appendChild(heading);
+
+                button_accept = document.createElement("button");
+                button_accept.textContent = "Accept";
+                button_accept.addEventListener("click", function () {
                     accept_request(request);
-                };
+                });
 
-                const buttonDecline = document.createElement("button");
-                buttonDecline.textContent = "Decline " + request;
-                buttonDecline.onclick = function() {
+                button_decline = document.createElement("button");
+                button_decline.textContent = "Decline";
+                button_decline.addEventListener("click", function () {
                     decline_request(request);
-                };
+                });
 
-                const div = document.createElement("div");
-                div.appendChild(buttonAccept);
-                div.appendChild(buttonDecline);
+                const buttonContainer = document.createElement("div");
+                buttonContainer.classList.add("card_buttons");
+                buttonContainer.appendChild(button_accept);
+                buttonContainer.appendChild(button_decline);
 
-                requestsMenu.appendChild(div);
+                request_card.appendChild(buttonContainer);
+
+                requestsMenu.appendChild(request_card);
             });
         });
     }
@@ -119,11 +228,11 @@
         });
     }
 
-    setInterval(update_friends, 1000);
+    setInterval(update_friends, 3000);
     setInterval(update_requests, 1000);
 
     // Call update functions when the page loads
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         update_friends();
         update_requests();
     });

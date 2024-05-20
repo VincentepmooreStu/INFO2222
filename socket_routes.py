@@ -88,6 +88,10 @@ def check_connection(room_id):
     emit("not_connected", to=room_id)
     return False
 
+@socketio.on("check_online")
+def check_online(username):
+    return room.check_active(username)
+
 # leave room event handler
 @socketio.on("leave")
 def leave(username, room_id):

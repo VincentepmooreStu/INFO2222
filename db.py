@@ -90,6 +90,21 @@ def get_friendships(username: str):
         values = result.fetchall()
         friend_list = [v[0] for v in values]
         return friend_list
+    
+def remove_friendship(user1, user2):
+    with Session(engine) as session:
+        friendshipID1 = user1 + user2
+        friendshipID2 = user2 + user1
+        
+        friendship1 = session.query(Friendship).filter_by(friendshipID=friendshipID1).first()
+        friendship2 = session.query(Friendship).filter_by(friendshipID=friendshipID2).first()
+        
+        if friendship1 is None or friendship2 is None:
+            return
+        
+        session.delete(friendship1)
+        session.delete(friendship2)
+        session.commit()
 
 def send_request(requester, requestee):
     with Session(engine) as session:

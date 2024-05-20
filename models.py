@@ -123,3 +123,11 @@ class Room():
                 ls.append(client)
         return ls
     
+    def check_active(self, user):
+        ls = []
+        for client in self.dict.keys():
+            if client == user:
+                return True
+        return False
+
+    
