@@ -30,6 +30,7 @@ class User(Base):
     # in other words we've mapped the username Python object property to an SQL column of type String 
     username: Mapped[str] = mapped_column(String, primary_key=True)
     password: Mapped[str] = mapped_column(String)
+    role: Mapped[str] = mapped_column(String)
 
 #model to store friends
 class Friendship(Base):

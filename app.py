@@ -84,12 +84,13 @@ def signup_user():
 
     username = request.json.get("username")
     password = request.json.get("password")
+    role = request.json.get("role")
     
     if not username.isalnum() or len(username) > 12:
         return "Please only use letters or numbers for your username."
     
     if db.get_user(username) is None:
-        db.insert_user(username, password)
+        db.insert_user(username, password, role)
         return url_for('home', username=username)
     return "Error: User already exists!"
 

@@ -24,9 +24,9 @@ engine = create_engine("sqlite:///database/main.db", echo=False)
 Base.metadata.create_all(engine)
 
 # inserts a user to the database
-def insert_user(username: str, password: str):
+def insert_user(username: str, password: str, role):
     with Session(engine) as session:
-        user = User(username=username, password=password)
+        user = User(username=username, password=password, role=role)
         session.add(user)
         session.commit()
 
@@ -34,6 +34,11 @@ def insert_user(username: str, password: str):
 def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
+
+def get_role(username):
+    with Session(engine) as session:
+        user = get_user(username)
+        return user.role()
 
 # inserts friendship into database
 def insert_friendship(user1: str, user2: str):

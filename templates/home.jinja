@@ -91,13 +91,6 @@
         </td>
     </section>
 
-    <section id="message_history_list">
-        <h2>Message History</h2>
-        <td style="test-align: center;">
-            <div class="vertical-menu">
-            </div>
-        </td>
-    </section>
     <!-- The (message) input box is set to display: none initially, 
     this means the input box is "invisible" initially-->
     <section id="invite_box">
@@ -172,14 +165,13 @@
         add_message(msg, color);
     })
 
-    socket.on("incoming_from_user", (username, cipher_text, hmac) => {
+    socket.on("incoming_from_user", (username, cipher_text, hmac, role) => {
         message = CryptoJS.AES.decrypt(cipher_text, Cookies.get("shared_key"));
         message = message.toString(CryptoJS.enc.Utf8);
         if (hmac != CryptoJS.HmacSHA256(message, Cookies.get("shared_key").toString())) {
             alert("Your connection has been compromised!")
         } else {
-            add_message(`${username}: ${message}`);
-            add_message2(`${username}: ${message}`);
+            add_message(`(${role}) ${username}: ${message}`);
         }
     })
 

@@ -64,6 +64,15 @@ Sign up page, pretty much the same as login.
         <input id="password" type="password">
     </div>
     <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role">
+            <option value="student">Student</option>
+            <option value="academic">Academic</option>
+            <option value="administrative staff">Administrative Staff</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+    <div class="form-group">
         <button onclick="signup()">Sign up</button>
     </div>
 </div>
@@ -84,6 +93,7 @@ Sign up page, pretty much the same as login.
             let loginURL = "{{ url_for('signup_user') }}";
             let entered_password = $("#password").val(); 
             let username = $("#username").val();
+            let role = $("#role").val();
 
             if (!checkpassword(entered_password)) {
                 alert("Password complexity error");
@@ -93,7 +103,8 @@ Sign up page, pretty much the same as login.
             password = CryptoJS.SHA256(entered_password.concat(username)).toString();
             let res = await axios.post(loginURL, {
                 username: username,
-                password: password
+                password: password,
+                role: role
             });
             if (!isValidURL(res.data)) {
                 alert(res.data);
