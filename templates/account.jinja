@@ -1,5 +1,24 @@
 {% extends 'base.jinja' %}
 
+{%block content%}
+<style>
+    .logout_button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #6200ffc5;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    .logout_button:hover {
+        background-color: #3600b3;
+    }
+</style>
+
 <head>
     {% include "navbar.jinja" %}
+
+    <p><a href={{ url_for('logout') }} class="logout_button">Logout</a></p>
 </head>
+{% endblock %}

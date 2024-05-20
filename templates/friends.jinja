@@ -38,6 +38,11 @@
             <!-- Request list items will be inserted here dynamically -->
         </div>
     </section>
+    <section id="invite_box">
+        <p class="text">Send Friend Request: </p>
+        <input id="requestee" placeholder="username">
+        <button onclick="add_friend()">Send</button>
+    </section>
 </body>
 
 <script>
@@ -96,6 +101,21 @@
 
                 requestsMenu.appendChild(div);
             });
+        });
+    }
+
+    function add_friend() {
+        let new_friend = $("#requestee").val();
+        $("#requestee").val("");
+        // pass in the receiver of our message to the server
+        // as well as the current user's username
+        socket.emit("add", username, new_friend, (res) => {
+            // res is a string with the error message if the error occurs
+            // this is a pretty bad way of doing error handling, but watevs
+            if (typeof res == "string") {
+                alert(res);
+                return;
+            }
         });
     }
 

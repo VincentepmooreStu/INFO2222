@@ -280,7 +280,7 @@
                 <div id="comments_list" class="comments">
                     <!-- Comments will be inserted here dynamically -->
                 </div>
-                <div class="input-container">
+                <div class="input-container" , id="add_comment_container">
                     <input type="text" id="comment_content" placeholder="Your comment">
                     <button id="add_comment_button" onclick="add_comment()">Add Comment</button>
                 </div>
@@ -356,7 +356,7 @@
         author = `Written by: ${name} (${Cookies.get('role')}) `;
         Cookies.set('title', title);
 
-        
+
         $('#add_post_section').hide();
         $('#edit_post_container').hide();
         $('#view_post_title').text(title);
@@ -367,6 +367,12 @@
         if (Cookies.get('role') == 'student') {
             $('#edit_post_button').hide();
             $('#delete_post_button').hide();
+        }
+
+        if (await check_muted()) {
+            $('#edit_post_button').hide();
+            $('#delete_post_button').hide();
+            $('#add_comment_container').hide();
         }
 
         await load_comments(title);
@@ -400,7 +406,7 @@
             };
 
             if (Cookies.get('role') != 'student') {
-                commentDiv.appendChild(deleteButton); 
+                commentDiv.appendChild(deleteButton);
             }
             commentsList.appendChild(commentDiv);
         });
@@ -474,6 +480,24 @@
         });
     }
 
+    async function check_muted() {
+        let get_muted_url = "{{ url_for('get_muted') }}";
+        res = await axios.post(get_muted_url, {
+            username: Cookies.get('username')
+        })
+        return JSON.parse(res.data);
+    }
+
+    async function display_add() {
+        let muted = await check_muted();
+        if (muted) {
+            $('#add_post_section').hide();
+        } else {
+            $('#add_post_section').show();
+        }
+    }
+
+    display_add();
     update_article_list();
     setInterval(update_article_list, 1000);
 </script>

@@ -1,13 +1,114 @@
 {% extends 'base.jinja' %}
 
 {% block content %}
+
 <head>
     {% include "navbar.jinja" %}
 </head>
+
+<style>
+    main {
+        padding: 20px;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #6200ffc5;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-bottom: 20px;
+    }
+
+    button:hover {
+        background-color: #3600b3;
+    }
+
+    #user_list {
+        list-style: none;
+        padding: 0;
+        width: 200px;
+        margin: 0;
+    }
+
+    .user-item {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .user-item:hover {
+        background-color: #f0f0f0;
+    }
+</style>
 
 <main>
     <div>
         <button onclick="darkMode()">Darkmode</button>
     </div>
+
+    <section id="users">
+        <h2>Mute/Unmute Users</h2>
+        <div class="vertical-menu" id="user_list">
+            <!-- User list items will be inserted here dynamically -->
+        </div>
+    </section>
 </main>
+
+<script>
+
+
+    async function update_user_list() {
+        let get_users_url = "{{ url_for('get_user_list') }}";
+        res = await axios.get(get_users_url);
+        users = res.data;
+        console.log(users)
+
+        const users_list = document.getElementById("user_list");
+        users_list.innerHTML = "";
+
+        users.forEach(user => {
+            const li = document.createElement("div");
+            if (user.muted) {
+                li.textContent = `(${user.role}) ${user.username} (muted)`;
+                li.addEventListener("click", () => {
+                    unmute_user(user.username);
+                });
+            } else {
+                li.textContent = `(${user.role}) ${user.username}`;
+                li.addEventListener("click", () => {
+                    mute_user(user.username);
+                });
+            }
+            li.classList.add("user-item");
+            users_list.appendChild(li);
+        });
+        console.log(Cookies.get('role'));
+        if (Cookies.get('role') == 'student'){
+            $('#users').hide();
+        } else {
+            $('#users').show();
+        }
+    }
+
+    async function mute_user(username) {
+        let mute_user_url = "{{ url_for('mute_user') }}";
+        await axios.post(mute_user_url, {
+            username: username
+        })
+    }
+
+    async function unmute_user(username) {
+        let unmute_user_url = "{{ url_for('unmute_user') }}";
+        await axios.post(unmute_user_url, {
+            username: username
+        })
+    }
+
+    update_user_list();
+    setInterval(update_user_list, 1000);
+</script>
 {% endblock %}

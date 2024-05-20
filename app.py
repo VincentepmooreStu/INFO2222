@@ -114,6 +114,7 @@ def home():
         return render_template("index.jinja")
 
     role = db.get_role(user)
+    print(role)
     friends = db.get_friendships(user) # get friends
     requests = db.get_friend_requests(user) # get friend requests
     return render_template("home.jinja", username=user, friend_list = friends, requests=requests, role=role)
@@ -160,6 +161,42 @@ def settings():
         return render_template("index.jinja")
           
     return render_template("settings.jinja", username=user)
+
+@app.route("/settings/get_user_list", methods=["GET"])
+def get_user_list():
+    return db.get_users()
+
+@app.route("/get_muted", methods=["POST"])
+def get_muted():
+    if not request.is_json:
+        abort(404)
+
+    username = request.json.get('username')
+    return jsonify(db.get_muted(username))
+
+@app.route("/settings/mute_user", methods=["POST"])
+def mute_user():
+
+    if not request.is_json:
+        abort(404)
+
+    username = request.json.get('username')
+    db.mute_user(username)
+
+    return 'Success'
+
+@app.route("/settings/unmute_user", methods=["POST"])
+def unmute_user():
+
+    if not request.is_json:
+        abort(404)
+
+    username = request.json.get('username')
+    db.unmute_user(username)
+
+    return 'Success'
+
+
 
 @app.route("/articles/add_post", methods=["POST"])
 def add_post():

@@ -26,7 +26,7 @@ Base.metadata.create_all(engine)
 # inserts a user to the database
 def insert_user(username: str, password: str, role):
     with Session(engine) as session:
-        user = User(username=username, password=password, role=role)
+        user = User(username=username, password=password, role=role, muted=False)
         session.add(user)
         session.commit()
 
@@ -34,6 +34,27 @@ def insert_user(username: str, password: str, role):
 def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
+
+def get_muted(username):
+    with Session(engine) as session:
+        return session.get(User, username).muted
+
+def mute_user(username):
+    with Session(engine) as session:
+        user = session.query(User).filter(User.username == username).first()
+        user.muted = True
+        session.commit()
+
+def unmute_user(username):
+    with Session(engine) as session:
+        user = session.query(User).filter(User.username == username).first()
+        user.muted = False
+        session.commit()
+
+def get_users():
+    with Session(engine) as session:
+        users =  session.query(User).all()
+        return [{'username': user.username,'role': user.role,'muted': user.muted } for user in users]
 
 def get_role(username):
     with Session(engine) as session:

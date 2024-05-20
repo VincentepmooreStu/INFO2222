@@ -93,19 +93,13 @@
 
     <!-- The (message) input box is set to display: none initially, 
     this means the input box is "invisible" initially-->
-    <section id="invite_box">
-        <p class="text">Send Friend Request: </p>
-        <input id="requestee" placeholder="username">
-        <!-- MDN says its bad practice to use the onclick attribute,
-        but we're using it anyways coz its easy :)-->
-        <button onclick="add_friend()">Send</button>
-    </section>
+
     <section id="input_box" style="display: none">
         <p class="text">Message: </p>
         <input id="message" placeholder="message">
         <button onclick="send()">Send</button>
         <button onclick="leave()">Leave Room</button>
-        <p><a href={{ url_for('logout') }}>Logout</a></p>
+
     </section>
 </main>
 
@@ -146,8 +140,9 @@
     // Here's the Socket IO part of the code
     // things get a bit complicated here so brace yourselves :P
     let username = "{{ username }}";
+    let role = "{{ role }}";
     Cookies.set('username', username);
-    Cookies.set('role', '{{ role }}');
+    Cookies.set('role', role);
 
     // initializes the socket
     const socket = io();
@@ -189,28 +184,35 @@
     }
 
     // we emit a join room event to the server to join a room
-    function join_room(receiver) {
+    async function join_room(receiver) {
         // pass in the receiver of our message to the server
         // as well as the current user's username
-        socket.emit("join", username, receiver, (res) => {
-            // res is a string with the error message if the error occurs
-            // this is a pretty bad way of doing error handling, but watevs
-            if (typeof res != "number") {
-                alert(res);
-                return;
-            }
+        muted = await check_muted();
+        if (muted) {
+            alert('You are muted!')
+        }
+        else {
+            socket.emit("join", username, receiver, (res) => {
+                // res is a string with the error message if the error occurs
+                // this is a pretty bad way of doing error handling, but watevs
+                if (typeof res != "number") {
+                    alert(res);
+                    return;
+                }
 
-            // set the room id variable to the room id returned by the server
-            room_id = res;
-            Cookies.set("room_id", room_id);
-            check_connected();
+                // set the room id variable to the room id returned by the server
+                room_id = res;
+                Cookies.set("room_id", room_id);
+                check_connected();
 
-            // now we'll show the input box, so the user can input their message
-            $("#invite_box").hide();
-            $("#friends_list").hide();
-            $("#request_list").hide();
-            $("#input_box").show();
-        });
+
+                // now we'll show the input box, so the user can input their message
+                $("#invite_box").hide();
+                $("#friends_list").hide();
+                $("#request_list").hide();
+                $("#input_box").show();
+            });
+        }
     }
 
     // function when the user clicks on "Leave Room"
@@ -238,19 +240,12 @@
         box.append(child);
     }
 
-    function add_friend() {
-        let new_friend = $("#requestee").val();
-        $("#requestee").val("");
-        // pass in the receiver of our message to the server
-        // as well as the current user's username
-        socket.emit("add", username, new_friend, (res) => {
-            // res is a string with the error message if the error occurs
-            // this is a pretty bad way of doing error handling, but watevs
-            if (typeof res == "string") {
-                alert(res);
-                return;
-            }
-        });
+    async function check_muted() {
+        let get_muted_url = "{{ url_for('get_muted') }}";
+        res = await axios.post(get_muted_url, {
+            username: Cookies.get('username')
+        })
+        return JSON.parse(res.data);
     }
 </script>
 {% endblock %}
