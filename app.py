@@ -91,6 +91,7 @@ def signup_user():
     
     if db.get_user(username) is None:
         db.insert_user(username, password, role)
+        session["user"] = username
         return url_for('home', username=username)
     return "Error: User already exists!"
 
@@ -112,9 +113,10 @@ def home():
     else:
         return render_template("index.jinja")
 
+    role = db.get_role(user)
     friends = db.get_friendships(user) # get friends
     requests = db.get_friend_requests(user) # get friend requests
-    return render_template("home.jinja", username=user, friend_list = friends, requests=requests)
+    return render_template("home.jinja", username=user, friend_list = friends, requests=requests, role=role)
 
 @app.route("/articles")
 def articles():
@@ -230,7 +232,7 @@ def get_post_comments():
 
     article = request.json.get("article")
     comments = db.get_comments(article)
-    formatted_comments = [{"poster_name": comment[0], "content": comment[1], "id": comment[2]} for comment in comments]
+    formatted_comments = [{"poster_name": comment[0], "content": comment[1], "id": comment[2], "role": comment[3]} for comment in comments]
     return jsonify(formatted_comments)
 
 @app.route("/articles/add_post_comment", methods=["POST"])

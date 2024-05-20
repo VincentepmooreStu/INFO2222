@@ -66,6 +66,7 @@ class Comment(Base):
     article_title = Column(String, ForeignKey("articles.article_title"))
     comment_poster = Column(String)
     article = relationship("Articles", back_populates="comments")
+    poster_role = Column(String)
 
 #message history model
 # class Message(Base):

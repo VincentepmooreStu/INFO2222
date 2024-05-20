@@ -147,6 +147,7 @@
     // things get a bit complicated here so brace yourselves :P
     let username = "{{ username }}";
     Cookies.set('username', username);
+    Cookies.set('role', '{{ role }}');
 
     // initializes the socket
     const socket = io();

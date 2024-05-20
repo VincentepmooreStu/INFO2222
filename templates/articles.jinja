@@ -353,14 +353,21 @@
 
         console.log(name)
 
-        author = 'Written by: ' + name;
+        author = `Written by: ${name} (${Cookies.get('role')}) `;
         Cookies.set('title', title);
+
+        
         $('#add_post_section').hide();
         $('#edit_post_container').hide();
         $('#view_post_title').text(title);
         $('#view_post_author').text(author);
         $('#view_post_content').text(content);
         $('#view_post_container').show();
+
+        if (Cookies.get('role') == 'student') {
+            $('#edit_post_button').hide();
+            $('#delete_post_button').hide();
+        }
 
         await load_comments(title);
     }
@@ -383,16 +390,18 @@
 
         comments.forEach(comment => {
             const commentDiv = document.createElement("div");
-            commentDiv.innerHTML = `<strong>${comment.poster_name}</strong>: ${comment.content}`;
-            const deleteButton = document.createElement("button");
+            commentDiv.innerHTML = `<strong>(${comment.role}) ${comment.poster_name}</strong>: ${comment.content}`;
 
+            const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
             deleteButton.onclick = async () => {
                 await deleteComment(comment.id);
                 await load_comments(title);
             };
 
-            commentDiv.appendChild(deleteButton);
+            if (Cookies.get('role') != 'student') {
+                commentDiv.appendChild(deleteButton); 
+            }
             commentsList.appendChild(commentDiv);
         });
     }

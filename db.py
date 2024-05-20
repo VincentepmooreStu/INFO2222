@@ -38,7 +38,7 @@ def get_user(username: str):
 def get_role(username):
     with Session(engine) as session:
         user = get_user(username)
-        return user.role()
+        return user.role
 
 # inserts friendship into database
 def insert_friendship(user1: str, user2: str):
@@ -174,7 +174,7 @@ def edit_post(title, new_content):
 def add_comment(article_title, content, poster_name):
     with Session(engine) as session:
         article = session.query(Articles).filter(Articles.article_title == article_title).first()
-        comment = Comment(content=content, article_title=article_title, comment_poster=poster_name)
+        comment = Comment(content=content, article_title=article_title, comment_poster=poster_name, poster_role=get_role(poster_name))
         article.comments.append(comment)
         session.add(comment)
         session.commit()
@@ -191,6 +191,6 @@ def delete_comment(comment_id):
 def get_comments(article_title):
     with Session(engine) as session:
         article = session.query(Articles).filter(Articles.article_title == article_title).options(subqueryload(Articles.comments)).first()
-        comments = [(comment.comment_poster, comment.content, comment.id) for comment in article.comments]
+        comments = [(comment.comment_poster, comment.content, comment.id, comment.poster_role) for comment in article.comments]
         return comments
  
