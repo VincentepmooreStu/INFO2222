@@ -107,18 +107,11 @@
         <button onclick="leave()">Leave Room</button>
         <p><a href={{ url_for('logout') }}>Logout</a></p>
     </section>
-
 </main>
-
-
 
 <script>
     let room_id = 0;
     let connected = false;
-
-    BigInt.prototype.toJSON = function () { return this.toString(); };
-
-    Cookies.set('secret_key', BigInt(Math.floor(Math.random() * 100000)));
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -135,7 +128,6 @@
             add_friend();
         }
     })
-
 
     $(document).ready(() => {
         // room_id is undefined if the user hasn't joined a room
@@ -158,21 +150,15 @@
 
     // initializes the socket
     const socket = io();
-    get_shared_keys();
 
     // an incoming message arrives, we'll add the message to the message box
     socket.on("incoming", (msg, color = "black") => {
         add_message(msg, color);
     })
 
-    socket.on("incoming_from_user", (username, cipher_text, hmac, role) => {
-        message = CryptoJS.AES.decrypt(cipher_text, Cookies.get("shared_key"));
-        message = message.toString(CryptoJS.enc.Utf8);
-        if (hmac != CryptoJS.HmacSHA256(message, Cookies.get("shared_key").toString())) {
-            alert("Your connection has been compromised!")
-        } else {
-            add_message(`(${role}) ${username}: ${message}`);
-        }
+    socket.on("incoming_from_user", (username, message) => {
+        add_message(`${username}: ${message}`);
+        add_message2(`${username}: ${message}`);
     })
 
     socket.on("not_connected", () => {
@@ -189,51 +175,15 @@
         let message = $("#message").val();
         $("#message").val("");
         if (connected) {
-            hmac = CryptoJS.HmacSHA256(message, Cookies.get("shared_key")).toString();
-            cipher_text = CryptoJS.AES.encrypt(message, Cookies.get("shared_key"));
-            socket.emit("send", username, cipher_text.toString(), hmac, parseInt(Cookies.get('room_id')));
-        }
-        else {
+            socket.emit("send", username, message, parseInt(Cookies.get('room_id')));
+        } else {
             add_message("Cannot send message, waiting to connect ...", "grey");
         }
     }
 
-    // Gets shared keys for diffie helman from server and stores in cookies
-    function get_shared_keys() {
-        socket.emit("request_shared_keys", (p, g) => {
-            Cookies.set('P', BigInt(p));
-            Cookies.set('G', BigInt(g));
-        })
-    }
-
-    function send_pub() {
-        g = BigInt(parseInt(Cookies.get('G')));
-        p = BigInt(parseInt(Cookies.get('P')));
-        a = BigInt(parseInt(Cookies.get('secret_key')));
-        A = (g ** a) % p;
-        socket.emit('send_pub', A, false, parseInt(Cookies.get("room_id")));
-    }
-
-    socket.on("key_pub", (B, is_B) => {
-        g = BigInt(parseInt(Cookies.get('G')));
-        p = BigInt(parseInt(Cookies.get('P')));
-        a = BigInt(parseInt(Cookies.get('secret_key')));
-        A = (g ** a) % p;
-        Cookies.set('shared_key', (BigInt(B) ** a) % p, secure = true);
-        if (!is_B) {
-            socket.emit('send_pub', A, true, parseInt(Cookies.get("room_id")));
-        }
-    })
-
     function check_connected() {
         socket.emit("check_connected", parseInt(Cookies.get("room_id")), (res) => {
-            if (res) {
-                connected = true;
-                return true;
-            } else {
-                connected = false;
-                return false;
-            }
+            connected = res;
         })
     }
 
@@ -259,23 +209,13 @@
             $("#friends_list").hide();
             $("#request_list").hide();
             $("#input_box").show();
-
-            socket.emit("check_connected", parseInt(Cookies.get("room_id")), (res) => {
-                if (res) {
-                    socket.emit("display_connection", room_id)
-                    send_pub();
-                }
-            })
-
         });
-
     }
 
     // function when the user clicks on "Leave Room"
     // emits a "leave" event, telling the server that we want to leave the room
     function leave() {
         Cookies.remove("room_id");
-        Cookies.remove("shared_key");
         socket.emit("leave", username, room_id);
         $("#input_box").hide();
         $("#invite_box").show();
@@ -310,38 +250,6 @@
                 return;
             }
         });
-
     }
-
-    function encrypt(plain_text, secret) {
-        var key = CryptoJS.enc.Utf8.parse(secret);
-        let iv = CryptoJS.lib.WordArray.create(key.words.slice(0, 4));
-        console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
-
-        // Encrypt the plaintext
-        var cipherText = CryptoJS.AES.encrypt(plain_text, key, {
-            iv: iv,
-            mode: CryptoJS.mode.CBC,
-            padding: CryptoJS.pad.Pkcs7
-        });
-        return (cipherText.toString(), iv);
-    }
-
-    function decrypt(cipherText, secret, iv) {
-        // IV is a base64 string
-        console.log("IV : " + CryptoJS.enc.Base64.stringify(iv));
-        let iv1 = CryptoJS.enc.Base64.parse(iv);
-        var key = CryptoJS.enc.Utf8.parse(secret);
-        var cipherBytes = CryptoJS.enc.Base64.parse(cipherText.replaceAll('"', ''));
-
-        var decrypted = CryptoJS.AES.decrypt({ ciphertext: cipherBytes }, key, {
-            iv: 3,
-            mode: CryptoJS.mode.CBC,
-            padding: CryptoJS.pad.Pkcs7
-        });
-
-        return decrypted.toString(CryptoJS.enc.Utf8);
-    }
-
 </script>
 {% endblock %}

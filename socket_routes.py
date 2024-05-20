@@ -46,8 +46,8 @@ def disconnect():
 
 # send message event handler
 @socketio.on("send")
-def send(username, message, hmac, room_id):
-    emit("incoming_from_user", (username, message, hmac, db.get_role(username)), to=room_id)
+def send(username, message, room_id):
+    emit("incoming_from_user", (username, message), to=room_id)
     
 # join room event handler
 # sent when the user joins a room
@@ -82,27 +82,11 @@ def join(sender_name, receiver_name):
 
 @socketio.on("check_connected")
 def check_connection(room_id):
-    if len(room.get_users(room_id)) == 2:
+    if len(room.get_users(room_id)) > 1:
         emit("connected", to=room_id)
         return True
     emit("not_connected", to=room_id)
     return False
-
-#receives A and B from clients and sends to other connected client
-@socketio.on("send_pub")
-def diffie_exchange_helper(pub, is_B, room_id):
-    emit("key_pub", (pub, is_B), to=room_id, include_self=False)
-
-@socketio.on("request_shared_keys")
-def send_shared_keys():
-    p = 26266879083691988639
-    g = 7
-    return p, g
-
-@socketio.on("display_connection")
-def display_connection(room_id):
-    if check_connection(room_id):
-        emit("incoming", ("You are now connected!", "green"), to=room_id)
 
 # leave room event handler
 @socketio.on("leave")
